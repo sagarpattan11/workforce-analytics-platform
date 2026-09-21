@@ -1,0 +1,110 @@
+export const tokens = {
+  colors: {
+    primary: {
+      light: '#2563EB',
+      main: '#1D4ED8',
+      dark: '#1E40AF',
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      light: '#7C3AED',
+      main: '#6D28D9',
+      dark: '#5B21B6',
+      contrastText: '#FFFFFF',
+    },
+    success: {
+      light: '#34D399',
+      main: '#10B981',
+      dark: '#059669',
+      contrastText: '#FFFFFF',
+    },
+    warning: {
+      light: '#FBBF24',
+      main: '#F59E0B',
+      dark: '#D97706',
+      contrastText: '#111827',
+    },
+    error: {
+      light: '#F87171',
+      main: '#EF4444',
+      dark: '#DC2626',
+      contrastText: '#FFFFFF',
+    },
+    info: {
+      light: '#60A5FA',
+      main: '#3B82F6',
+      dark: '#2563EB',
+      contrastText: '#FFFFFF',
+    },
+    light: {
+      background: '#F8FAFC',
+      surface: '#FFFFFF',
+      surfaceAlt: '#F1F5F9',
+      textPrimary: '#0F172A',
+      textSecondary: '#475569',
+      textDisabled: '#94A3B8',
+      border: '#E2E8F0',
+      divider: '#E2E8F0',
+    },
+    dark: {
+      background: '#0B0F19',
+      surface: '#111827',
+      surfaceAlt: '#1F2937',
+      textPrimary: '#F8FAFC',
+      textSecondary: '#94A3B8',
+      textDisabled: '#64748B',
+      border: '#1F2937',
+      divider: '#374151',
+    },
+  },
+  spacing: {
+    unit: 4,
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48,
+  },
+  borderRadius: {
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    full: 9999,
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: { fontSize: '2rem', fontWeight: 700, lineHeight: 1.2 },
+    h2: { fontSize: '1.5rem', fontWeight: 600, lineHeight: 1.3 },
+    h3: { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.4 },
+    body1: { fontSize: '0.875rem', fontWeight: 400, lineHeight: 1.5 },
+    body2: { fontSize: '0.75rem', fontWeight: 400, lineHeight: 1.5 },
+    button: { textTransform: 'none', fontWeight: 600 },
+  },
+  zIndex: {
+    drawer: 1200,
+    modal: 1300,
+    tooltip: 1500,
+  },
+  transitions: {
+    durationShort: 200,
+    durationStandard: 300,
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+    },
+  },
+} as const;
+
+export type DesignTokens = typeof tokens;
