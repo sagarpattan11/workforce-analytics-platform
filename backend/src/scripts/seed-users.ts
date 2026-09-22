@@ -2,54 +2,45 @@ import { connectDatabase, disconnectDatabase } from '../config/database';
 import { User, UserRole } from '../models/user.model';
 
 interface SeedUserData {
-  name: string;
+  username: string;
+  displayName: string;
   email: string;
   password: string;
-  role: UserRole;
+  roles: UserRole[];
   department: string;
 }
 
 const SEED_USERS: SeedUserData[] = [
   {
-    name: 'System Admin',
+    username: 'admin',
+    displayName: 'System Admin',
     email: 'admin@wfa.internal',
     password: 'Password123!',
-    role: 'Admin',
+    roles: ['admin'],
     department: 'Executive Management',
   },
   {
-    name: 'Sarah HR',
+    username: 'hr',
+    displayName: 'Sarah HR',
     email: 'hr@wfa.internal',
     password: 'Password123!',
-    role: 'HR Manager',
+    roles: ['manager'],
     department: 'Human Resources',
   },
   {
-    name: 'David Executive',
-    email: 'exec@wfa.internal',
-    password: 'Password123!',
-    role: 'Executive',
-    department: 'Executive Board',
-  },
-  {
-    name: 'Marcus Manager',
+    username: 'manager',
+    displayName: 'Marcus Manager',
     email: 'manager@wfa.internal',
     password: 'Password123!',
-    role: 'Department Manager',
+    roles: ['manager'],
     department: 'Engineering',
   },
   {
-    name: 'Elena Lead',
-    email: 'lead@wfa.internal',
-    password: 'Password123!',
-    role: 'Team Lead',
-    department: 'Engineering',
-  },
-  {
-    name: 'Alex Employee',
+    username: 'employee',
+    displayName: 'Alex Employee',
     email: 'employee@wfa.internal',
     password: 'Password123!',
-    role: 'Employee',
+    roles: ['employee'],
     department: 'Engineering',
   },
 ];
@@ -65,14 +56,18 @@ const seedUsers = async (): Promise<void> => {
       const existing = await User.findOne({ email: userData.email });
 
       if (existing) {
-        console.log(`ℹ️ User already exists: ${userData.email} (${existing.role})`);
+        existing.roles = userData.roles;
+        existing.username = userData.username;
+        existing.displayName = userData.displayName;
+        await existing.save();
+        console.log(`ℹ️ User updated: ${userData.email} (Roles: ${userData.roles.join(', ')})`);
       } else {
         await User.create(userData);
-        console.log(`✅ Created ${userData.role}: ${userData.email}`);
+        console.log(`✅ Created ${userData.username}: ${userData.email}`);
       }
     }
 
-    console.log('\n🎉 All 6 enterprise role accounts are seeded successfully!');
+    console.log('\n🎉 Enterprise accounts seeded successfully!');
     console.log('🔑 Default password for all accounts: Password123!');
   } catch (error) {
     console.error('❌ Seeding failed:', error);

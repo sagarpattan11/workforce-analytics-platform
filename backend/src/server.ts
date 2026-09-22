@@ -1,6 +1,7 @@
 import app from './app';
 import { env } from './config/env';
 import { connectDatabase, disconnectDatabase } from './config/database';
+import { initSocketServer } from './sockets/socket.server';
 
 // Initialize Database & Start Server
 const startServer = async () => {
@@ -12,6 +13,9 @@ const startServer = async () => {
     console.log(`🩺 Health check available at: http://localhost:${env.PORT}/api/v1/health`);
     console.log(`📖 Swagger API docs available at: http://localhost:${env.PORT}/api-docs`);
   });
+
+  // Attach Socket.IO server
+  initSocketServer(server);
 
   // Graceful Shutdown
   const handleShutdown = async (signal: string) => {

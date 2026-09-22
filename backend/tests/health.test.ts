@@ -25,6 +25,6 @@ describe('GET /api/v1/health', () => {
     expect(response.status).toBe(200);
     expect(response.body.openapi).toBe('3.0.3');
     expect(response.body.info.title).toBe('Workforce Analytics Platform API');
-    expect(response.body.paths).toHaveProperty('/auth/login');
+    expect(response.body.paths).toHaveProperty('/auth/login-challenge');
   });
 });

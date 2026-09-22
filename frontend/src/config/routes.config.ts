@@ -80,6 +80,22 @@ export const APP_ROUTES: AppRoute[] = [
     description: 'Attendance logs, check-in history and time tracking',
   },
   {
+    path: '/attendance/history',
+    label: 'Attendance History',
+    breadcrumbLabel: 'Attendance History',
+    inSidebar: false,
+    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    description: 'Historical attendance records and time-tracking data',
+  },
+  {
+    path: '/attendance/corrections',
+    label: 'Attendance Corrections',
+    breadcrumbLabel: 'Attendance Corrections',
+    inSidebar: false,
+    allowedRoles: ['Admin', 'HR', 'Manager'],
+    description: 'Review and approve attendance punch corrections',
+  },
+  {
     path: '/absence',
     label: 'Absence',
     breadcrumbLabel: 'Absence & Leave',
@@ -90,6 +106,14 @@ export const APP_ROUTES: AppRoute[] = [
     description: 'Leave applications, approvals and absence calendar',
   },
   {
+    path: '/absence/calendar',
+    label: 'Absence Calendar',
+    breadcrumbLabel: 'Absence Calendar',
+    inSidebar: false,
+    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    description: 'Team and department leave schedule calendar',
+  },
+  {
     path: '/scheduling',
     label: 'Scheduling',
     breadcrumbLabel: 'Scheduling & Shifts',
@@ -98,6 +122,22 @@ export const APP_ROUTES: AppRoute[] = [
     inSidebar: true,
     allowedRoles: ['Admin', 'Manager', 'Team Lead'],
     description: 'Shift rosters, scheduling assignments and shift swaps',
+  },
+  {
+    path: '/scheduling/shifts',
+    label: 'Shift Management',
+    breadcrumbLabel: 'Shifts',
+    inSidebar: false,
+    allowedRoles: ['Admin', 'Manager', 'Team Lead'],
+    description: 'Shift creation, assignment, and roster management',
+  },
+  {
+    path: '/scheduling/swaps',
+    label: 'Shift Swaps',
+    breadcrumbLabel: 'Shift Swaps',
+    inSidebar: false,
+    allowedRoles: ['Admin', 'Manager', 'Team Lead', 'Employee'],
+    description: 'Employee shift swap requests and manager approvals',
   },
 
   // Management Group
@@ -228,12 +268,40 @@ export const APP_ROUTES: AppRoute[] = [
 
   // Utility & Feedback Routes
   {
+    path: '/login',
+    label: 'Login',
+    breadcrumbLabel: 'Sign In',
+    inSidebar: false,
+    description: 'Enterprise passkey and authentication portal',
+  },
+  {
+    path: '/auth/callback',
+    label: 'Auth Callback',
+    breadcrumbLabel: 'Authentication Callback',
+    inSidebar: false,
+    description: 'Authentication token handoff and verification callback',
+  },
+  {
     path: '/403',
     label: 'Access Denied',
     breadcrumbLabel: 'Access Denied',
     icon: ShieldAlert,
     inSidebar: false,
     description: 'Unauthorized access feedback screen',
+  },
+  {
+    path: '/404',
+    label: 'Not Found',
+    breadcrumbLabel: '404 Not Found',
+    inSidebar: false,
+    description: 'Page not found feedback screen',
+  },
+  {
+    path: '/500',
+    label: 'Server Error',
+    breadcrumbLabel: '500 Server Error',
+    inSidebar: false,
+    description: 'Internal server error feedback screen',
   },
 ];
 

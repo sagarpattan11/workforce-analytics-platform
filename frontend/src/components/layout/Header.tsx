@@ -62,8 +62,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       await api.post('/auth/logout');
     } catch (err) {
       console.error('Logout error:', err);
+    } finally {
+      localStorage.removeItem('wfa_token');
+      localStorage.removeItem('wfa_user');
+      window.location.href = '/login';
     }
-    window.location.reload();
   };
 
   // Resolve current route metadata for breadcrumb
@@ -84,6 +87,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         position: 'sticky',
         top: 0,
         zIndex: 1100,
+        flexShrink: 0,
+        boxShadow: (theme) =>
+          theme.palette.mode === 'dark'
+            ? '0 2px 4px rgba(0,0,0,0.4)'
+            : '0 2px 4px rgba(0,0,0,0.03)',
       }}
     >
       {/* 1. Left: Hamburger Toggle & Dynamic Breadcrumbs */}

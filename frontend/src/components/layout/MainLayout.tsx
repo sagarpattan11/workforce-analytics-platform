@@ -33,10 +33,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ currentRole = 'Admin' })
     <Box
       sx={{
         display: 'flex',
-        minHeight: '100vh',
+        height: '100vh',
         bgcolor: 'background.default',
         color: 'text.primary',
-        overflowX: 'hidden',
+        overflow: 'hidden',
       }}
     >
       {/* 1. Enterprise Sidebar */}
@@ -55,6 +55,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ currentRole = 'Admin' })
           flexDirection: 'column',
           flex: 1,
           minWidth: 0,
+          height: '100vh',
+          overflowY: 'auto',
           overflowX: 'hidden',
         }}
       >

@@ -22,6 +22,8 @@ import { RoleDashboardPage } from '../features/dashboard/RoleDashboardPage';
 // Feedback Pages
 import { AccessDeniedState } from '../components/feedback/AccessDeniedState';
 import { NotFoundPage } from '../components/feedback/NotFoundPage';
+import { ServerErrorPage } from '../components/feedback/ServerErrorPage';
+import { LoginPage } from '../features/auth/LoginPage';
 
 export const AppRoutes: React.FC = () => {
   // Default role is 'Admin' for Day 1 & 2 baseline presentation
@@ -29,6 +31,10 @@ export const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
+      {/* Public Authentication Route */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/callback" element={<Navigate to="/dashboard" replace />} />
+
       {/* Platform Enterprise Layout Routes */}
       <Route element={<MainLayout currentRole={currentRole} />}>
         {/* Root Redirect */}
@@ -57,11 +63,37 @@ export const AppRoutes: React.FC = () => {
 
         {/* Operations Group */}
         <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/attendance/history" element={<AttendancePage />} />
+        <Route
+          path="/attendance/corrections"
+          element={
+            <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
+              <AttendancePage />
+            </RoleGuard>
+          }
+        />
         <Route path="/absence" element={<AbsencePage />} />
+        <Route path="/absence/calendar" element={<AbsencePage />} />
         <Route
           path="/scheduling"
           element={
             <RoleGuard allowedRoles={['Admin', 'Manager', 'Team Lead']} currentRole={currentRole}>
+              <SchedulingPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/scheduling/shifts"
+          element={
+            <RoleGuard allowedRoles={['Admin', 'Manager', 'Team Lead']} currentRole={currentRole}>
+              <SchedulingPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/scheduling/swaps"
+          element={
+            <RoleGuard allowedRoles={['Admin', 'Manager', 'Team Lead', 'Employee']} currentRole={currentRole}>
               <SchedulingPage />
             </RoleGuard>
           }
@@ -185,6 +217,9 @@ export const AppRoutes: React.FC = () => {
 
         {/* 403 Forbidden Route */}
         <Route path="/403" element={<AccessDeniedState />} />
+
+        {/* 500 Server Error Route */}
+        <Route path="/500" element={<ServerErrorPage />} />
 
         {/* 404 Route Catch-All */}
         <Route path="*" element={<NotFoundPage />} />

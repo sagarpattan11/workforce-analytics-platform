@@ -1,39 +1,57 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
 
-export type AuditAction =
-  | 'USER_REGISTERED'
-  | 'LOGIN_SUCCESS'
-  | 'LOGIN_FAILURE'
-  | 'LOGOUT'
-  | 'PASSKEY_REGISTERED'
-  | 'PASSKEY_LOGIN_SUCCESS'
-  | 'PASSKEY_LOGIN_FAILURE'
-  | 'PASSKEY_RENAMED'
-  | 'PASSKEY_REVOKED';
+export const AUTH_AUDIT_ACTIONS = [
+  'register_challenge',
+  'register_success',
+  'register_failure',
+  'login_challenge',
+  'login_success',
+  'login_failure',
+  'logout',
+  'credential_rename',
+  'credential_revoke',
+  'role_update',
+  // legacy aliases
+  'USER_REGISTERED',
+  'LOGIN_SUCCESS',
+  'LOGIN_FAILURE',
+  'LOGOUT',
+  'PASSKEY_REGISTERED',
+  'PASSKEY_LOGIN_SUCCESS',
+  'PASSKEY_LOGIN_FAILURE',
+  'PASSKEY_RENAMED',
+  'PASSKEY_REVOKED',
+] as const;
 
-export interface IAuditLog extends Document {
-  action: AuditAction;
+export type AuthAuditAction = (typeof AUTH_AUDIT_ACTIONS)[number];
+
+export interface IAuthAuditLog extends Document {
   userId?: mongoose.Types.ObjectId;
+  username?: string;
   email?: string;
   role?: string;
-  status: 'SUCCESS' | 'FAILURE';
+  action: AuthAuditAction;
+  success: boolean;
+  status?: 'SUCCESS' | 'FAILURE';
+  ipAddress: string;
   ip?: string;
-  userAgent?: string;
+  userAgent: string;
+  failureReason?: string;
   details?: string;
   createdAt: Date;
 }
 
-const auditLogSchema = new Schema<IAuditLog>(
+const authAuditLogSchema = new Schema<IAuthAuditLog>(
   {
-    action: {
-      type: String,
-      required: true,
-      index: true,
-    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       index: true,
+    },
+    username: {
+      type: String,
+      lowercase: true,
+      trim: true,
     },
     email: {
       type: String,
@@ -43,13 +61,17 @@ const auditLogSchema = new Schema<IAuditLog>(
     role: {
       type: String,
     },
-    status: {
+    action: {
       type: String,
-      enum: ['SUCCESS', 'FAILURE'],
       required: true,
       index: true,
     },
-    ip: {
+    success: {
+      type: Boolean,
+      required: true,
+      index: true,
+    },
+    ipAddress: {
       type: String,
       default: 'unknown',
     },
@@ -57,32 +79,55 @@ const auditLogSchema = new Schema<IAuditLog>(
       type: String,
       default: 'unknown',
     },
+    failureReason: {
+      type: String,
+    },
     details: {
       type: String,
     },
   },
   {
-    timestamps: { createdAt: true, updatedAt: false }, // Immutable audit records
+    timestamps: { createdAt: true, updatedAt: false },
   }
 );
 
-// Helper function to easily log an event from controllers
+// Helper function to easily log an event
 export const logAuditEvent = async (data: {
-  action: AuditAction;
+  action: AuthAuditAction | string;
   userId?: mongoose.Types.ObjectId | string;
+  username?: string;
   email?: string;
   role?: string;
-  status: 'SUCCESS' | 'FAILURE';
+  success?: boolean;
+  status?: 'SUCCESS' | 'FAILURE';
+  ipAddress?: string;
   ip?: string;
   userAgent?: string;
+  failureReason?: string;
   details?: string;
 }): Promise<void> => {
   try {
-    await AuditLog.create(data);
+    const isSuccess = data.success !== undefined ? data.success : data.status === 'SUCCESS';
+    await AuthAuditLog.create({
+      userId: data.userId,
+      username: data.username || (data.email ? data.email.split('@')[0] : undefined),
+      email: data.email,
+      role: data.role,
+      action: data.action as AuthAuditAction,
+      success: isSuccess,
+      ipAddress: data.ipAddress || data.ip || 'unknown',
+      userAgent: data.userAgent || 'unknown',
+      failureReason: data.failureReason || (!isSuccess ? data.details : undefined),
+      details: data.details,
+    });
   } catch (err) {
-    console.error('Failed to write audit log:', err);
+    console.error('Failed to write auth audit log:', err);
   }
 };
 
-export const AuditLog: Model<IAuditLog> = mongoose.model<IAuditLog>('AuditLog', auditLogSchema);
-export default AuditLog;
+export const AuthAuditLog: Model<IAuthAuditLog> = mongoose.model<IAuthAuditLog>(
+  'AuthAuditLog',
+  authAuditLogSchema
+);
+export const AuditLog = AuthAuditLog;
+export default AuthAuditLog;

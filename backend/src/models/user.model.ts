@@ -1,25 +1,21 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-// The 6 Enterprise Roles
-export const USER_ROLES = [
-  'Admin',
-  'HR Manager',
-  'Executive',
-  'Department Manager',
-  'Team Lead',
-  'Employee',
-] as const;
-
+// Enterprise Roles enum matching specification
+export const USER_ROLES = ['admin', 'manager', 'employee'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 // User Interface
 export interface IUser extends Document {
-  name: string;
+  username: string;
   email: string;
+  displayName: string;
+  name?: string; // alias for displayName
   password?: string;
-  role: UserRole;
+  roles: UserRole[];
+  role?: string; // single role helper
   department?: string;
+  currentChallenge?: string;
   isActive: boolean;
   lastLogin?: Date;
   createdAt: Date;
@@ -30,11 +26,13 @@ export interface IUser extends Document {
 // User Schema
 const userSchema = new Schema<IUser>(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, 'Name is required'],
+      required: [true, 'Username is required'],
+      unique: true,
+      lowercase: true,
       trim: true,
-      maxlength: [100, 'Name cannot exceed 100 characters'],
+      index: true,
     },
     email: {
       type: String,
@@ -42,29 +40,38 @@ const userSchema = new Schema<IUser>(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        'Please provide a valid email address',
-      ],
+      index: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address'],
+    },
+    displayName: {
+      type: String,
+      required: [true, 'Display name is required'],
+      trim: true,
+    },
+    name: {
+      type: String,
+      trim: true,
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
-      select: false, // Automatically hides password hash from API query results
+      select: false, // Hidden by default
     },
-    role: {
-      type: String,
+    roles: {
+      type: [String],
       enum: {
         values: USER_ROLES,
-        message: '{VALUE} is not a supported enterprise role',
+        message: '{VALUE} is not a valid enterprise role',
       },
-      default: 'Employee',
+      default: ['employee'],
       required: true,
     },
     department: {
       type: String,
       trim: true,
+    },
+    currentChallenge: {
+      type: String,
     },
     isActive: {
       type: Boolean,
@@ -75,24 +82,30 @@ const userSchema = new Schema<IUser>(
     },
   },
   {
-    timestamps: true, // Automatically manages createdAt and updatedAt
+    timestamps: true,
   }
 );
 
-// Pre-save Middleware: Automatically hash password if modified
+// Virtuals / hooks to sync name and displayName
 userSchema.pre('save', async function () {
-  if (!this.isModified('password') || !this.password) {
-    return;
+  if (this.displayName && !this.name) {
+    this.name = this.displayName;
+  } else if (this.name && !this.displayName) {
+    this.displayName = this.name;
   }
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (!this.username && this.email) {
+    this.username = this.email.split('@')[0].toLowerCase();
+  }
+
+  if (this.isModified('password') && this.password) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 });
 
-// Instance Method: Compare input password with hashed password in database
-userSchema.methods.comparePassword = async function (
-  candidatePassword: string
-): Promise<boolean> {
+// Instance Method: Compare input password with hashed password
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };

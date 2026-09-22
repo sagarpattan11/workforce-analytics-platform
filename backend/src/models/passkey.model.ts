@@ -5,10 +5,14 @@ export interface IPasskey extends Document {
   credentialID: string; // Base64URL credential ID
   credentialPublicKey: Buffer; // Public key for signature verification
   counter: number; // Monotonically increasing signature counter
-  deviceType: 'singleDevice' | 'multiDevice';
-  backedUp: boolean;
+  credentialDeviceType: string;
+  credentialBackedUp: boolean;
+  backedUp?: boolean;
   transports: string[]; // e.g. ['internal', 'usb', 'nfc', 'ble', 'hybrid']
-  nickname: string; // User-defined name, e.g. "Windows Hello Laptop", "YubiKey 5C"
+  friendlyName: string; // e.g. "Windows (Chrome Passkey)"
+  nickname?: string; // alias
+  deviceType?: string; // alias
+  aaguid?: string;
   createdAt: Date;
   lastUsedAt: Date;
 }
@@ -36,24 +40,37 @@ const passkeySchema = new Schema<IPasskey>(
       required: true,
       default: 0,
     },
-    deviceType: {
+    credentialDeviceType: {
       type: String,
-      enum: ['singleDevice', 'multiDevice'],
       default: 'singleDevice',
+    },
+    credentialBackedUp: {
+      type: Boolean,
+      default: false,
     },
     backedUp: {
       type: Boolean,
-      default: false,
     },
     transports: {
       type: [String],
       default: ['internal'],
     },
+    friendlyName: {
+      type: String,
+      required: [true, 'Friendly name is required'],
+      trim: true,
+      default: 'Security Key / Device',
+      maxlength: [100, 'Friendly name cannot exceed 100 characters'],
+    },
     nickname: {
       type: String,
       trim: true,
-      default: 'Passkey',
-      maxlength: [60, 'Nickname cannot exceed 60 characters'],
+    },
+    deviceType: {
+      type: String,
+    },
+    aaguid: {
+      type: String,
     },
     lastUsedAt: {
       type: Date,
@@ -64,6 +81,21 @@ const passkeySchema = new Schema<IPasskey>(
     timestamps: true,
   }
 );
+
+// Sync nickname and friendlyName
+passkeySchema.pre('save', async function () {
+  if (this.friendlyName && !this.nickname) {
+    this.nickname = this.friendlyName;
+  } else if (this.nickname && !this.friendlyName) {
+    this.friendlyName = this.nickname;
+  }
+
+  if (this.credentialDeviceType && !this.deviceType) {
+    this.deviceType = this.credentialDeviceType;
+  } else if (this.deviceType && !this.credentialDeviceType) {
+    this.credentialDeviceType = this.deviceType;
+  }
+});
 
 export const Passkey: Model<IPasskey> = mongoose.model<IPasskey>('Passkey', passkeySchema);
 export default Passkey;

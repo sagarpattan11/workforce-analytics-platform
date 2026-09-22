@@ -1,6 +1,9 @@
 import express, { Application } from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import { env } from './config/env';
 import { helmetMiddleware, corsMiddleware, rateLimiterMiddleware } from './middleware/security.middleware';
 import { notFoundHandler, centralErrorHandler } from './middleware/error.middleware';
 import swaggerUi from 'swagger-ui-express';
@@ -17,6 +20,31 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Express Session with MongoDB store
+const sessionStore = env.MONGODB_URI
+  ? MongoStore.create({
+      mongoUrl: env.MONGODB_URI,
+      collectionName: 'sessions',
+      ttl: 7 * 24 * 60 * 60, // 7 days
+    })
+  : undefined;
+
+app.use(
+  session({
+    name: 'wfa_session',
+    secret: env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+    cookie: {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  })
+);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));

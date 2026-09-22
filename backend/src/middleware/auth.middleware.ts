@@ -3,91 +3,73 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { User, IUser, UserRole } from '../models/user.model';
 
-// Extend Express Request interface to include authenticated user
+// Extend Express Request interface
 export interface AuthenticatedRequest extends Request {
   user?: IUser;
 }
 
 interface JwtPayload {
   id: string;
-  role: UserRole;
+  role?: string;
+  roles?: string[];
   email: string;
 }
 
 /**
- * Middleware: Verify JWT Authentication Token
- * Validates token from Authorization header (Bearer <token>) or HTTP cookie
+ * Middleware: Verify Authentication
+ * Validates active session via express-session (req.session.userId) or Bearer JWT token fallback
  */
-export const authenticate = async (
+export const requireAuth = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  // Check Authorization header (Bearer token)
   let token: string | undefined;
-
-  // 1. Check Authorization header
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-  }
-  // 2. Check HTTP-only cookie as fallback
-  else if (req.cookies && req.cookies.token) {
-    token = req.cookies.token;
   }
 
   if (!token) {
     res.status(401).json({
       success: false,
       status: 'fail',
-      message: 'Authentication required. Please provide a valid authorization token.',
+      message: 'Authentication required. Please provide a valid Bearer token.',
     });
     return;
   }
 
   try {
-    // Verify token signature
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-
-    // Check if user still exists in database
     const user = await User.findById(decoded.id);
 
-    if (!user) {
+    if (!user || !user.isActive) {
       res.status(401).json({
         success: false,
         status: 'fail',
-        message: 'The user belonging to this token no longer exists.',
+        message: 'The user belonging to this token no longer exists or is inactive.',
       });
       return;
     }
 
-    if (!user.isActive) {
-      res.status(403).json({
-        success: false,
-        status: 'fail',
-        message: 'Your account has been deactivated. Please contact an administrator.',
-      });
-      return;
-    }
-
-    // Attach authenticated user to request
     req.user = user;
     next();
-  } catch (error) {
+  } catch (err: any) {
     res.status(401).json({
       success: false,
       status: 'fail',
-      message: 'Invalid or expired authentication token. Please sign in again.',
+      message: 'Invalid or expired token. Please sign in again.',
     });
   }
 };
 
+
+
 /**
  * Middleware: Authorize by Role (RBAC)
- * Restricts endpoint access to specific roles among the 6 enterprise roles
+ * Supports 'admin', 'manager', 'employee' or custom enterprise roles
  */
-export const authorize = (...allowedRoles: UserRole[]) => {
+export const requireRole = (...allowedRoles: (UserRole | string)[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({
@@ -98,11 +80,17 @@ export const authorize = (...allowedRoles: UserRole[]) => {
       return;
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRoles: string[] = req.user.roles || (req.user.role ? [req.user.role] : []);
+    const normalizedUserRoles = userRoles.map((r) => r.toLowerCase());
+    const normalizedAllowed = allowedRoles.map((r) => r.toLowerCase());
+
+    const hasPermission = normalizedAllowed.some((r) => normalizedUserRoles.includes(r));
+
+    if (!hasPermission) {
       res.status(403).json({
         success: false,
         status: 'fail',
-        message: `Access denied. Role '${req.user.role}' is not authorized to access this resource.`,
+        message: `Access denied. Authorized roles: ${allowedRoles.join(', ')}`,
       });
       return;
     }
@@ -110,3 +98,7 @@ export const authorize = (...allowedRoles: UserRole[]) => {
     next();
   };
 };
+
+// Aliases for backward compatibility
+export const authenticate = requireAuth;
+export const authorize = requireRole;

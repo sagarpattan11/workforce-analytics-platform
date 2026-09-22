@@ -32,8 +32,10 @@ export const apiClient: AxiosInstance = axios.create({
 // Request Interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Note: Microsoft authentication will use secure HTTP-only cookies.
-    // No tokens are read from or stored into localStorage.
+    const token = localStorage.getItem('wfa_token');
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error: AxiosError) => {

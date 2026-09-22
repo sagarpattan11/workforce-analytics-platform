@@ -11,9 +11,11 @@ const envSchema = z.object({
   PORT: z.string().transform(Number).default('5000'),
   BACKEND_PORT: z.string().transform(Number).optional(),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
-  // Optional placeholders for later tasks (Task 7 & 9)
+  ORIGIN: z.string().default('http://localhost:3000'),
+  RP_NAME: z.string().default('Workforce Analytics Platform'),
+  RP_ID: z.string().default('localhost'),
+  SESSION_SECRET: z.string().default('wfa-enterprise-session-secret-key-2026'),
   MONGODB_URI: z.string().optional(),
-  SESSION_SECRET: z.string().optional(),
   JWT_SECRET: z.string().default('wfa-enterprise-jwt-secret-key-2026'),
   JWT_EXPIRES_IN: z.string().default('7d'),
 });
