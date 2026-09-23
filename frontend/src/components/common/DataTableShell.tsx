@@ -18,7 +18,7 @@ export interface Column<T> {
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T, index: number) => React.ReactNode;
 }
 
 export interface DataTableShellProps<T> {
@@ -87,7 +87,7 @@ export function DataTableShell<T extends Record<string, unknown>>({
                     const value = row[column.id as string];
                     return (
                       <TableCell key={String(column.id)} align={column.align || 'left'}>
-                        {column.render ? column.render(row) : (value as React.ReactNode)}
+                        {column.render ? column.render(row, rowIndex) : (value as React.ReactNode)}
                       </TableCell>
                     );
                   })}
