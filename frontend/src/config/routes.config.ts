@@ -16,8 +16,16 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 
-// Enterprise Roles
-export type UserRole = 'Admin' | 'HR' | 'Manager' | 'Team Lead' | 'Employee';
+// Enterprise Roles matching Sprint 1 specification
+export type UserRole =
+  | 'Admin'
+  | 'HR Manager'
+  | 'Executive'
+  | 'Department Manager'
+  | 'Team Lead'
+  | 'Employee'
+  | 'HR'
+  | 'Manager';
 
 // Navigation Groups
 export type NavigationGroup = 'Overview' | 'Workforce' | 'Operations' | 'Management' | 'System';
@@ -148,7 +156,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: BarChart3,
     group: 'Management',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
     description: 'Skill distribution, skill gaps and training recommendations',
   },
   {

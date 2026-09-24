@@ -30,14 +30,20 @@ import {
   Shield,
 } from 'lucide-react';
 import { useAppTheme } from '../../theme/ThemeContext';
-import { APP_ROUTES } from '../../config/routes.config';
+import { APP_ROUTES, UserRole } from '../../config/routes.config';
 import { api } from '../../api/client';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
+  currentRole?: UserRole;
+  onRoleChange?: (role: UserRole) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onToggleSidebar,
+  currentRole = 'Admin',
+  onRoleChange,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -242,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                 Sagar
               </Typography>
               <Typography variant="caption" lineHeight={1} sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                Administrator
+                {currentRole}
               </Typography>
             </Box>
           )}
@@ -258,7 +264,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             PaperProps={{
               sx: {
-                width: 220,
+                width: 240,
                 mt: 1.5,
                 borderRadius: 2,
                 boxShadow: theme.shadows[3],
@@ -270,10 +276,50 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                 Sagar
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block">
-                sagar@workforce.internal
+                Current Role: <strong>{currentRole}</strong>
               </Typography>
             </Box>
             <Divider />
+
+            {/* RBAC Role Switcher */}
+            {onRoleChange && (
+              <>
+                <Box sx={{ px: 2, pt: 1, pb: 0.5 }}>
+                  <Typography variant="caption" fontWeight={700} color="primary.main">
+                    SWITCH ROLE (RBAC DEMO)
+                  </Typography>
+                </Box>
+                {(
+                  [
+                    'Admin',
+                    'HR Manager',
+                    'Executive',
+                    'Department Manager',
+                    'Team Lead',
+                    'Employee',
+                  ] as UserRole[]
+                ).map((r) => (
+                  <MenuItem
+                    key={r}
+                    selected={currentRole === r}
+                    onClick={() => {
+                      onRoleChange(r);
+                      handleCloseUserMenu();
+                    }}
+                    sx={{ py: 0.5, fontSize: '0.825rem' }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight={currentRole === r ? 700 : 400}
+                      color={currentRole === r ? 'primary.main' : 'text.primary'}
+                    >
+                      {r} {currentRole === r ? '✓' : ''}
+                    </Typography>
+                  </MenuItem>
+                ))}
+                <Divider />
+              </>
+            )}
 
             <MenuItem component={RouterLink} to="/profile">
               <ListItemIcon>

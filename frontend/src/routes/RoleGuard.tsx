@@ -13,8 +13,30 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   currentRole = 'Admin',
   children,
 }) => {
-  // If allowedRoles specified and currentRole is not permitted, redirect to /403
-  if (allowedRoles && !allowedRoles.includes(currentRole)) {
+  if (!allowedRoles || allowedRoles.length === 0) {
+    return children;
+  }
+
+  // Admin has universal enterprise access
+  if (currentRole === 'Admin') {
+    return children;
+  }
+
+  // Role equivalence mapping for Sprint 1 enterprise roles
+  const roleAliases: Record<string, string[]> = {
+    'HR Manager': ['HR Manager', 'HR'],
+    'Department Manager': ['Department Manager', 'Manager'],
+    'Executive': ['Executive', 'Manager', 'Admin'],
+    'Manager': ['Manager', 'Department Manager'],
+    'HR': ['HR', 'HR Manager'],
+    'Team Lead': ['Team Lead'],
+    'Employee': ['Employee'],
+  };
+
+  const effectiveRoles = [currentRole, ...(roleAliases[currentRole] || [])];
+  const hasAccess = allowedRoles.some((r) => effectiveRoles.includes(r as UserRole));
+
+  if (!hasAccess) {
     return <Navigate to="/403" replace />;
   }
 

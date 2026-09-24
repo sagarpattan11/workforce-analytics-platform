@@ -19,6 +19,7 @@ import {
   Calendar,
   DollarSign,
   Clock,
+  Award,
 } from 'lucide-react';
 import { AppModal } from '../../../components/common/AppModal';
 import { IEmployee, DepartmentRef, TeamRef } from '../../../services/employee.service';
@@ -259,6 +260,23 @@ export const EmployeeDetailsModal: React.FC<EmployeeDetailsModalProps> = ({
                 </Typography>
                 <Typography variant="body2" fontWeight={600}>
                   {formattedSalary}
+                </Typography>
+              </Box>
+            </Stack>
+          </Grid>
+
+          {/* Total Experience */}
+          <Grid item xs={12} sm={6}>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Award size={18} color="#64748B" />
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Total Experience
+                </Typography>
+                <Typography variant="body2" fontWeight={600}>
+                  {employee.yearsOfExperience !== undefined && employee.yearsOfExperience !== null
+                    ? `${employee.yearsOfExperience} Years`
+                    : 'Not specified'}
                 </Typography>
               </Box>
             </Stack>

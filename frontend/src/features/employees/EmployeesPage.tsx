@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Stack,
@@ -83,6 +84,9 @@ export const EmployeesPage: React.FC = () => {
   // Debounce search query timer
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const { id: routeEmployeeId } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
+
   // 1. Fetch departments for dropdowns
   useEffect(() => {
     employeeService
@@ -90,6 +94,21 @@ export const EmployeesPage: React.FC = () => {
       .then((res) => setDepartments(res.data || []))
       .catch((err) => console.error('Failed to load departments:', err));
   }, []);
+
+  // Auto-open employee details modal if /employees/:id is directly visited
+  useEffect(() => {
+    if (routeEmployeeId) {
+      employeeService
+        .getEmployeeById(routeEmployeeId)
+        .then((res) => {
+          if (res.data) {
+            setViewEmployee(res.data);
+            setDetailsModalOpen(true);
+          }
+        })
+        .catch((err) => console.warn('Direct employee route lookup error:', err));
+    }
+  }, [routeEmployeeId]);
 
   // 2. Fetch employees based on active filters and pagination
   const fetchEmployees = useCallback(async () => {
@@ -167,6 +186,7 @@ export const EmployeesPage: React.FC = () => {
   const handleOpenDetailsModal = (emp: IEmployee) => {
     setViewEmployee(emp);
     setDetailsModalOpen(true);
+    navigate(`/employees/${emp._id || emp.employeeId}`, { replace: false });
   };
 
   // Handle Open Delete Dialog
@@ -354,6 +374,18 @@ export const EmployeesPage: React.FC = () => {
           />
         );
       },
+    },
+    {
+      id: 'yearsOfExperience',
+      label: 'Experience',
+      minWidth: 100,
+      render: (row) => (
+        <Typography variant="body2" color="text.primary" fontWeight={500}>
+          {row.yearsOfExperience !== undefined && row.yearsOfExperience !== null
+            ? `${row.yearsOfExperience} yrs`
+            : '—'}
+        </Typography>
+      ),
     },
     {
       id: 'hireDate',
@@ -575,7 +607,13 @@ export const EmployeesPage: React.FC = () => {
         {/* Modal: View Employee Details Profile */}
         <EmployeeDetailsModal
           open={detailsModalOpen}
-          onClose={() => setDetailsModalOpen(false)}
+          onClose={() => {
+            setDetailsModalOpen(false);
+            setViewEmployee(null);
+            if (routeEmployeeId) {
+              navigate('/employees', { replace: true });
+            }
+          }}
           employee={viewEmployee}
           onEdit={(emp) => handleOpenEditModal(emp)}
         />

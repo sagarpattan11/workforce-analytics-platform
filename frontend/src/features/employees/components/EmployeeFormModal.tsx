@@ -47,6 +47,7 @@ interface FormState {
   status: EmployeeStatus;
   location: string;
   hireDate: string;
+  yearsOfExperience: string;
   salary: string;
 }
 
@@ -65,6 +66,7 @@ const defaultFormState: FormState = {
   status: 'Active',
   location: 'Office',
   hireDate: new Date().toISOString().split('T')[0],
+  yearsOfExperience: '',
   salary: '',
 };
 
@@ -117,6 +119,8 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
           status: initialData.status || 'Active',
           location: initialData.location || '',
           hireDate: dateStr,
+          yearsOfExperience:
+            initialData.yearsOfExperience !== undefined ? String(initialData.yearsOfExperience) : '',
           salary: initialData.salary ? String(initialData.salary) : '',
         });
 
@@ -177,6 +181,13 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     if (!formData.location.trim()) errors.location = 'Location is required';
     if (!formData.hireDate) errors.hireDate = 'Hire date is required';
 
+    if (
+      formData.yearsOfExperience &&
+      (isNaN(Number(formData.yearsOfExperience)) || Number(formData.yearsOfExperience) < 0)
+    ) {
+      errors.yearsOfExperience = 'Years of experience must be a non-negative number';
+    }
+
     if (formData.salary && (isNaN(Number(formData.salary)) || Number(formData.salary) < 0)) {
       errors.salary = 'Salary must be a valid positive number';
     }
@@ -207,6 +218,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
           status: formData.status,
           location: formData.location.trim(),
           hireDate: formData.hireDate,
+          yearsOfExperience: formData.yearsOfExperience !== '' ? Number(formData.yearsOfExperience) : undefined,
           salary: formData.salary ? Number(formData.salary) : undefined,
         };
 
@@ -226,6 +238,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
           status: formData.status,
           location: formData.location.trim(),
           hireDate: formData.hireDate,
+          yearsOfExperience: formData.yearsOfExperience !== '' ? Number(formData.yearsOfExperience) : undefined,
           salary: formData.salary ? Number(formData.salary) : undefined,
         };
 
@@ -511,8 +524,25 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
             />
           </Grid>
 
+          {/* Years of Experience */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Years of Experience"
+              type="number"
+              size="small"
+              fullWidth
+              disabled={submitting}
+              placeholder="e.g. 5"
+              inputProps={{ min: 0, step: 0.5 }}
+              value={formData.yearsOfExperience}
+              onChange={(e) => setFormData((prev) => ({ ...prev, yearsOfExperience: e.target.value }))}
+              error={Boolean(fieldErrors.yearsOfExperience)}
+              helperText={fieldErrors.yearsOfExperience || 'Total professional experience (years)'}
+            />
+          </Grid>
+
           {/* Annual Salary */}
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label="Annual Salary ($ USD)"
               type="number"

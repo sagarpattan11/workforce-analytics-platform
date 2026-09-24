@@ -1,8 +1,18 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-// Enterprise Roles enum matching specification
-export const USER_ROLES = ['admin', 'manager', 'employee'] as const;
+// Enterprise Roles enum matching Sprint 1 specification
+export const USER_ROLES = [
+  'admin',
+  'hr_manager',
+  'executive',
+  'department_manager',
+  'team_lead',
+  'employee',
+  // Backward compatibility aliases
+  'manager',
+  'hr',
+] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 // User Interface

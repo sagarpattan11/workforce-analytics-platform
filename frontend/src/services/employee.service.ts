@@ -36,6 +36,7 @@ export interface IEmployee extends Record<string, unknown> {
   status: EmployeeStatus;
   location: string;
   hireDate: string;
+  yearsOfExperience?: number;
   salary?: number;
   avatarUrl?: string;
   isDeleted?: boolean;
@@ -103,6 +104,7 @@ export interface CreateEmployeeInput {
   status?: EmployeeStatus;
   location: string;
   hireDate: string;
+  yearsOfExperience?: number;
   salary?: number;
   avatarUrl?: string;
 }
@@ -119,6 +121,7 @@ export interface UpdateEmployeeInput {
   status?: EmployeeStatus;
   location?: string;
   hireDate?: string;
+  yearsOfExperience?: number;
   salary?: number;
   avatarUrl?: string;
 }

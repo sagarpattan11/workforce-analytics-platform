@@ -3,6 +3,14 @@ import { env } from '../config/env';
 import { Department } from '../models/department.model';
 import { Team } from '../models/team.model';
 import { Employee } from '../models/employee.model';
+import { Role } from '../models/role.model';
+import { Location } from '../models/location.model';
+import { Skill } from '../models/skill.model';
+import { Training } from '../models/training.model';
+import { Recruitment } from '../models/recruitment.model';
+import { Placement } from '../models/placement.model';
+import { Attendance } from '../models/attendance.model';
+import { Performance } from '../models/performance.model';
 
 const seedWorkforce = async () => {
   try {
@@ -75,11 +83,149 @@ const seedWorkforce = async () => {
     }
 
     // -------------------------------------------------------------
-    // 3. SEED EMPLOYEES (32 Realistic Employees)
+    // 3. SEED LOCATIONS
     // -------------------------------------------------------------
-    console.log('\n👥 Seeding Employees...');
-    const now = new Date();
+    console.log('\n📍 Seeding Locations...');
+    const locationsData = [
+      { name: 'HQ - San Francisco', code: 'HQ-SF', city: 'San Francisco', country: 'United States', type: 'Office', capacity: 250 },
+      { name: 'New York Innovation Hub', code: 'NY-HUB', city: 'New York', country: 'United States', type: 'Office', capacity: 150 },
+      { name: 'London Tech Center', code: 'LDN-CTR', city: 'London', country: 'United Kingdom', type: 'Hybrid', capacity: 100 },
+      { name: 'Berlin Engineering Lab', code: 'BER-LAB', city: 'Berlin', country: 'Germany', type: 'Office', capacity: 80 },
+      { name: 'Tokyo Regional Hub', code: 'TKO-HUB', city: 'Tokyo', country: 'Japan', type: 'Office', capacity: 60 },
+      { name: 'Global Remote Workforce', code: 'REM-GLB', city: 'Remote', country: 'Global', type: 'Work From Home', capacity: 500 },
+    ];
 
+    for (const loc of locationsData) {
+      await Location.findOneAndUpdate({ code: loc.code }, loc, { upsert: true, new: true });
+    }
+    console.log(`   + Seeded ${locationsData.length} Enterprise Locations`);
+
+    // -------------------------------------------------------------
+    // 4. SEED ROLES
+    // -------------------------------------------------------------
+    console.log('\n👔 Seeding Roles...');
+    const engDept = departmentMap.get('ENG');
+    const hrDept = departmentMap.get('HR');
+    const prodDept = departmentMap.get('PROD');
+    const finDept = departmentMap.get('FIN');
+
+    const rolesData = [
+      { name: 'Staff Software Engineer', code: 'ENG-STAFF', departmentId: engDept._id, level: 'Lead', description: 'Technical direction & architecture' },
+      { name: 'Senior Software Engineer', code: 'ENG-SR-SWE', departmentId: engDept._id, level: 'Senior', description: 'Full stack feature engineering' },
+      { name: 'DevOps & Cloud Architect', code: 'ENG-DEVOPS', departmentId: engDept._id, level: 'Senior', description: 'Infrastructure and pipelines' },
+      { name: 'QA Automation Engineer', code: 'ENG-QA', departmentId: engDept._id, level: 'Mid', description: 'Test automation and quality gates' },
+      { name: 'HR Business Partner', code: 'HR-BP', departmentId: hrDept._id, level: 'Senior', description: 'Strategic talent management' },
+      { name: 'Talent Acquisition Specialist', code: 'HR-TAS', departmentId: hrDept._id, level: 'Mid', description: 'Candidate sourcing and interview coordination' },
+      { name: 'Lead Product Manager', code: 'PROD-LEAD', departmentId: prodDept._id, level: 'Lead', description: 'Product roadmapping and delivery' },
+      { name: 'Senior UI/UX Designer', code: 'PROD-DESIGN', departmentId: prodDept._id, level: 'Senior', description: 'Design systems and UX research' },
+      { name: 'Financial Planning Analyst', code: 'FIN-ANALYST', departmentId: finDept._id, level: 'Mid', description: 'Budget forecasting and fiscal reporting' },
+    ];
+
+    for (const r of rolesData) {
+      await Role.findOneAndUpdate({ code: r.code }, r, { upsert: true, new: true });
+    }
+    console.log(`   + Seeded ${rolesData.length} Roles`);
+
+    // -------------------------------------------------------------
+    // 5. SEED SKILLS
+    // -------------------------------------------------------------
+    console.log('\n🧠 Seeding Skills Registry...');
+    const skillsData = [
+      { name: 'React.js & Next.js', category: 'Technical', requiredHeadcount: 12, benchmarkScore: 85, departmentIds: [engDept._id] },
+      { name: 'Node.js & TypeScript', category: 'Technical', requiredHeadcount: 10, benchmarkScore: 80, departmentIds: [engDept._id] },
+      { name: 'Cloud Architecture & AWS', category: 'Technical', requiredHeadcount: 8, benchmarkScore: 85, departmentIds: [engDept._id] },
+      { name: 'PostgreSQL & MongoDB', category: 'Technical', requiredHeadcount: 9, benchmarkScore: 80, departmentIds: [engDept._id] },
+      { name: 'Docker & Kubernetes', category: 'Technical', requiredHeadcount: 7, benchmarkScore: 75, departmentIds: [engDept._id] },
+      { name: 'Agile & Scrum Leadership', category: 'Leadership', requiredHeadcount: 10, benchmarkScore: 90, departmentIds: [engDept._id, prodDept._id] },
+      { name: 'Executive Communication', category: 'Soft Skills', requiredHeadcount: 14, benchmarkScore: 85, departmentIds: [hrDept._id, prodDept._id] },
+      { name: 'Talent Acquisition & Sourcing', category: 'Domain', requiredHeadcount: 6, benchmarkScore: 85, departmentIds: [hrDept._id] },
+      { name: 'Financial Modeling & Forecasting', category: 'Domain', requiredHeadcount: 5, benchmarkScore: 90, departmentIds: [finDept._id] },
+      { name: 'Design Systems & Figma', category: 'Domain', requiredHeadcount: 6, benchmarkScore: 85, departmentIds: [prodDept._id] },
+      { name: 'SOC2 & GDPR Data Compliance', category: 'Compliance', requiredHeadcount: 8, benchmarkScore: 95, departmentIds: [engDept._id, hrDept._id] },
+    ];
+
+    const skillMap = new Map<string, any>();
+    for (const s of skillsData) {
+      const savedSkill = await Skill.findOneAndUpdate({ name: s.name }, s, { upsert: true, new: true });
+      skillMap.set(s.name, savedSkill);
+    }
+    console.log(`   + Seeded ${skillsData.length} Skills`);
+
+    // -------------------------------------------------------------
+    // 6. SEED RECRUITMENT (Open Positions KPI)
+    // -------------------------------------------------------------
+    console.log('\n📢 Seeding Recruitment Requisitions (Open Positions)...');
+    const requisitionsData = [
+      { requisitionNumber: 'REQ-2026-001', title: 'Senior Full Stack Engineer', departmentId: engDept._id, location: 'San Francisco', openPositions: 3, filledPositions: 1, priority: 'High', status: 'Open' },
+      { requisitionNumber: 'REQ-2026-002', title: 'DevOps / SRE Lead', departmentId: engDept._id, location: 'London', openPositions: 2, filledPositions: 0, priority: 'Critical', status: 'Interviewing' },
+      { requisitionNumber: 'REQ-2026-003', title: 'Senior Product Designer', departmentId: prodDept._id, location: 'Remote', openPositions: 2, filledPositions: 0, priority: 'Medium', status: 'Open' },
+      { requisitionNumber: 'REQ-2026-004', title: 'Technical Recruiter', departmentId: hrDept._id, location: 'New York', openPositions: 2, filledPositions: 1, priority: 'Medium', status: 'Interviewing' },
+      { requisitionNumber: 'REQ-2026-005', title: 'FP&A Senior Analyst', departmentId: finDept._id, location: 'New York', openPositions: 2, filledPositions: 0, priority: 'High', status: 'Open' },
+      { requisitionNumber: 'REQ-2026-006', title: 'Staff Data Engineer', departmentId: engDept._id, location: 'San Francisco', openPositions: 2, filledPositions: 0, priority: 'High', status: 'Open' },
+    ];
+
+    for (const req of requisitionsData) {
+      await Recruitment.findOneAndUpdate({ requisitionNumber: req.requisitionNumber }, req, { upsert: true, new: true });
+    }
+    console.log(`   + Seeded ${requisitionsData.length} Recruitment Open Positions`);
+
+    // -------------------------------------------------------------
+    // 7. SEED TRAINING CATALOG
+    // -------------------------------------------------------------
+    console.log('\n🎓 Seeding Training Catalog...');
+    const trainingsData = [
+      {
+        title: 'Enterprise React & State Management Masterclass',
+        category: 'Technical',
+        targetSkillId: skillMap.get('React.js & Next.js')?._id,
+        durationHours: 24,
+        provider: 'Frontend Masters',
+        difficulty: 'Advanced',
+        rating: 4.9,
+        isActive: true,
+      },
+      {
+        title: 'Cloud Architecture & Kubernetes in Production',
+        category: 'Technical',
+        targetSkillId: skillMap.get('Docker & Kubernetes')?._id,
+        durationHours: 32,
+        provider: 'Cloud Native Computing Foundation',
+        difficulty: 'Advanced',
+        rating: 4.8,
+        isActive: true,
+      },
+      {
+        title: 'Modern Agile Leadership & Team Coaching',
+        category: 'Leadership',
+        targetSkillId: skillMap.get('Agile & Scrum Leadership')?._id,
+        durationHours: 16,
+        provider: 'Scrum Alliance',
+        difficulty: 'Intermediate',
+        rating: 4.7,
+        isActive: true,
+      },
+      {
+        title: 'Strategic Talent Sourcing & DEI Best Practices',
+        category: 'Domain',
+        targetSkillId: skillMap.get('Talent Acquisition & Sourcing')?._id,
+        durationHours: 12,
+        provider: 'SHRM Academy',
+        difficulty: 'Intermediate',
+        rating: 4.8,
+        isActive: true,
+      },
+    ];
+
+    for (const tr of trainingsData) {
+      await Training.findOneAndUpdate({ title: tr.title }, tr, { upsert: true, new: true });
+    }
+    console.log(`   + Seeded ${trainingsData.length} Training Courses`);
+
+    // -------------------------------------------------------------
+    // 8. SEED EMPLOYEES (With Skills, Experience & Exits)
+    // -------------------------------------------------------------
+    console.log('\n👥 Seeding Enriched Employees...');
+    const now = new Date();
     const getRelativeDate = (daysAgo: number) => {
       const d = new Date(now);
       d.setDate(d.getDate() - daysAgo);
@@ -96,12 +242,19 @@ const seedWorkforce = async () => {
         phone: '+1 (555) 234-5678',
         deptCode: 'ENG',
         teamCode: 'FE',
-        position: 'Staff Frontend Engineer',
+        position: 'Staff Software Engineer',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'San Francisco',
+        workLocationType: 'Office',
         hireDate: getRelativeDate(340),
+        yearsOfExperience: 8,
         salary: 155000,
+        skills: [
+          { name: 'React.js & Next.js', proficiency: 'Expert', certified: true },
+          { name: 'Node.js & TypeScript', proficiency: 'Advanced', certified: true },
+          { name: 'Agile & Scrum Leadership', proficiency: 'Advanced', certified: false },
+        ],
       },
       {
         employeeId: 'EMP-1002',
@@ -111,12 +264,18 @@ const seedWorkforce = async () => {
         phone: '+1 (555) 345-6789',
         deptCode: 'ENG',
         teamCode: 'FE',
-        position: 'Senior React Developer',
+        position: 'Senior Software Engineer',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'New York',
+        workLocationType: 'Hybrid',
         hireDate: getRelativeDate(280),
+        yearsOfExperience: 6,
         salary: 135000,
+        skills: [
+          { name: 'React.js & Next.js', proficiency: 'Advanced', certified: true },
+          { name: 'Node.js & TypeScript', proficiency: 'Intermediate', certified: false },
+        ],
       },
       {
         employeeId: 'EMP-1003',
@@ -126,348 +285,282 @@ const seedWorkforce = async () => {
         phone: '+44 20 7946 0912',
         deptCode: 'ENG',
         teamCode: 'FE',
-        position: 'Frontend Engineer',
+        position: 'Senior Software Engineer',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'London',
+        workLocationType: 'Hybrid',
         hireDate: getRelativeDate(18), // New hire (< 30 days)
+        yearsOfExperience: 3,
         salary: 85000,
+        skills: [
+          { name: 'React.js & Next.js', proficiency: 'Intermediate', certified: false },
+        ],
       },
       {
         employeeId: 'EMP-1004',
         firstName: 'Ananya',
         lastName: 'Sharma',
         email: 'ananya.sharma@workforce.internal',
-        phone: '+91 80 2345 6789',
+        phone: '+1 (555) 456-7890',
         deptCode: 'ENG',
         teamCode: 'FE',
-        position: 'Junior UI Engineer',
-        employmentType: 'Intern',
+        position: 'Senior Software Engineer',
+        employmentType: 'Full-time',
         status: 'Active',
-        location: 'Bengaluru',
-        hireDate: getRelativeDate(10), // New hire (< 30 days)
-        salary: 35000,
+        location: 'San Francisco',
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(190),
+        yearsOfExperience: 4,
+        salary: 120000,
+        skills: [
+          { name: 'React.js & Next.js', proficiency: 'Advanced', certified: true },
+          { name: 'Design Systems & Figma', proficiency: 'Intermediate', certified: false },
+        ],
       },
-
       // Engineering - Backend
       {
         employeeId: 'EMP-1005',
         firstName: 'Marcus',
         lastName: 'Vance',
         email: 'marcus.vance@workforce.internal',
-        phone: '+1 (555) 456-7890',
+        phone: '+1 (555) 567-8901',
         deptCode: 'ENG',
         teamCode: 'BE',
-        position: 'Principal Backend Architect',
+        position: 'Staff Software Engineer',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'San Francisco',
-        hireDate: getRelativeDate(360),
-        salary: 175000,
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(420),
+        yearsOfExperience: 11,
+        salary: 160000,
+        skills: [
+          { name: 'Node.js & TypeScript', proficiency: 'Expert', certified: true },
+          { name: 'PostgreSQL & MongoDB', proficiency: 'Expert', certified: true },
+          { name: 'Cloud Architecture & AWS', proficiency: 'Advanced', certified: true },
+        ],
       },
       {
         employeeId: 'EMP-1006',
         firstName: 'Elena',
         lastName: 'Rostova',
         email: 'elena.rostova@workforce.internal',
-        phone: '+49 30 1234567',
+        phone: '+49 30 123456',
         deptCode: 'ENG',
         teamCode: 'BE',
-        position: 'Senior Node.js Developer',
+        position: 'Senior Software Engineer',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'Berlin',
-        hireDate: getRelativeDate(210),
-        salary: 95000,
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(310),
+        yearsOfExperience: 7,
+        salary: 110000,
+        skills: [
+          { name: 'Node.js & TypeScript', proficiency: 'Advanced', certified: true },
+          { name: 'PostgreSQL & MongoDB', proficiency: 'Advanced', certified: false },
+        ],
       },
       {
         employeeId: 'EMP-1007',
-        firstName: 'Karthik',
-        lastName: 'Rao',
-        email: 'karthik.rao@workforce.internal',
-        phone: '+91 80 3456 7890',
-        deptCode: 'ENG',
-        teamCode: 'BE',
-        position: 'Backend Developer',
-        employmentType: 'Full-time',
-        status: 'On Leave', // On Leave
-        location: 'Bengaluru',
-        hireDate: getRelativeDate(150),
-        salary: 75000,
-      },
-
-      // Engineering - DevOps & QA
-      {
-        employeeId: 'EMP-1008',
-        firstName: 'Devon',
+        firstName: 'David',
         lastName: 'Kim',
-        email: 'devon.kim@workforce.internal',
-        phone: '+1 (555) 567-8901',
-        deptCode: 'ENG',
-        teamCode: 'DEVOPS',
-        position: 'Lead Cloud Infrastructure Engineer',
-        employmentType: 'Full-time',
-        status: 'Active',
-        location: 'Remote',
-        hireDate: getRelativeDate(300),
-        salary: 145000,
-      },
-      {
-        employeeId: 'EMP-1009',
-        firstName: 'Sophia',
-        lastName: 'Martinez',
-        email: 'sophia.martinez@workforce.internal',
+        email: 'david.kim@workforce.internal',
         phone: '+1 (555) 678-9012',
         deptCode: 'ENG',
-        teamCode: 'QA',
-        position: 'Senior QA Automation Lead',
+        teamCode: 'BE',
+        position: 'Senior Software Engineer',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'New York',
-        hireDate: getRelativeDate(190),
-        salary: 110000,
+        workLocationType: 'Hybrid',
+        hireDate: getRelativeDate(14), // New hire (< 30 days)
+        yearsOfExperience: 2,
+        salary: 95000,
+        skills: [
+          { name: 'Node.js & TypeScript', proficiency: 'Intermediate', certified: false },
+        ],
       },
-
-      // Human Resources
+      // Engineering - DevOps
       {
-        employeeId: 'EMP-1010',
-        firstName: 'Rachel',
-        lastName: 'Greenfield',
-        email: 'rachel.greenfield@workforce.internal',
+        employeeId: 'EMP-1008',
+        firstName: 'Rajesh',
+        lastName: 'Patel',
+        email: 'rajesh.patel@workforce.internal',
         phone: '+1 (555) 789-0123',
-        deptCode: 'HR',
-        teamCode: 'TA',
-        position: 'Head of Global Talent Acquisition',
+        deptCode: 'ENG',
+        teamCode: 'DEVOPS',
+        position: 'DevOps & Cloud Architect',
         employmentType: 'Full-time',
         status: 'Active',
-        location: 'New York',
-        hireDate: getRelativeDate(320),
-        salary: 130000,
+        location: 'San Francisco',
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(500),
+        yearsOfExperience: 10,
+        salary: 165000,
+        skills: [
+          { name: 'Cloud Architecture & AWS', proficiency: 'Expert', certified: true },
+          { name: 'Docker & Kubernetes', proficiency: 'Expert', certified: true },
+          { name: 'SOC2 & GDPR Data Compliance', proficiency: 'Advanced', certified: true },
+        ],
       },
+      // HR Team
       {
         employeeId: 'EMP-1011',
-        firstName: 'David',
-        lastName: 'O’Connor',
-        email: 'david.oconnor@workforce.internal',
-        phone: '+44 20 8912 3456',
+        firstName: 'Jessica',
+        lastName: 'Taylor',
+        email: 'jessica.taylor@workforce.internal',
+        phone: '+1 (555) 012-3456',
         deptCode: 'HR',
-        teamCode: 'PO',
-        position: 'People Operations Manager',
+        teamCode: 'TA',
+        position: 'HR Business Partner',
         employmentType: 'Full-time',
         status: 'Active',
-        location: 'London',
-        hireDate: getRelativeDate(240),
-        salary: 80000,
+        location: 'San Francisco',
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(365),
+        yearsOfExperience: 8,
+        salary: 115000,
+        skills: [
+          { name: 'Talent Acquisition & Sourcing', proficiency: 'Expert', certified: true },
+          { name: 'Executive Communication', proficiency: 'Expert', certified: true },
+        ],
       },
       {
         employeeId: 'EMP-1012',
-        firstName: 'Chloe',
-        lastName: 'Dupont',
-        email: 'chloe.dupont@workforce.internal',
-        phone: '+33 1 4050 6070',
+        firstName: 'Michael',
+        lastName: 'Chang',
+        email: 'michael.chang@workforce.internal',
+        phone: '+1 (555) 123-4567',
         deptCode: 'HR',
         teamCode: 'TA',
-        position: 'Technical Recruiter',
-        employmentType: 'Contract',
-        status: 'Active',
-        location: 'Berlin',
-        hireDate: getRelativeDate(12), // New hire (< 30 days)
-        salary: 60000,
-      },
-
-      // Finance
-      {
-        employeeId: 'EMP-1013',
-        firstName: 'Jonathan',
-        lastName: 'Sterling',
-        email: 'jonathan.sterling@workforce.internal',
-        phone: '+1 (555) 890-1234',
-        deptCode: 'FIN',
-        teamCode: 'FPNA',
-        position: 'VP of Financial Planning',
+        position: 'Talent Acquisition Specialist',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'New York',
-        hireDate: getRelativeDate(350),
-        salary: 180000,
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(200),
+        yearsOfExperience: 4,
+        salary: 82000,
+        skills: [
+          { name: 'Talent Acquisition & Sourcing', proficiency: 'Advanced', certified: false },
+        ],
       },
-      {
-        employeeId: 'EMP-1014',
-        firstName: 'Priya',
-        lastName: 'Nair',
-        email: 'priya.nair@workforce.internal',
-        phone: '+91 80 4567 8901',
-        deptCode: 'FIN',
-        teamCode: 'ACC',
-        position: 'Senior Corporate Accountant',
-        employmentType: 'Full-time',
-        status: 'Active',
-        location: 'Bengaluru',
-        hireDate: getRelativeDate(180),
-        salary: 70000,
-      },
-      {
-        employeeId: 'EMP-1015',
-        firstName: 'Lucas',
-        lastName: 'Schneider',
-        email: 'lucas.schneider@workforce.internal',
-        phone: '+49 30 8765432',
-        deptCode: 'FIN',
-        teamCode: 'FPNA',
-        position: 'Financial Analyst',
-        employmentType: 'Part-time',
-        status: 'Active',
-        location: 'Berlin',
-        hireDate: getRelativeDate(90),
-        salary: 45000,
-      },
-
-      // Marketing
-      {
-        employeeId: 'EMP-1016',
-        firstName: 'Jessica',
-        lastName: 'Alba-Cross',
-        email: 'jessica.cross@workforce.internal',
-        phone: '+1 (555) 901-2345',
-        deptCode: 'MKT',
-        teamCode: 'GROWTH',
-        position: 'Director of Growth Marketing',
-        employmentType: 'Full-time',
-        status: 'Active',
-        location: 'San Francisco',
-        hireDate: getRelativeDate(270),
-        salary: 140000,
-      },
-      {
-        employeeId: 'EMP-1017',
-        firstName: 'Oliver',
-        lastName: 'Twist-Smith',
-        email: 'oliver.smith@workforce.internal',
-        phone: '+44 20 7123 4567',
-        deptCode: 'MKT',
-        teamCode: 'BRAND',
-        position: 'Brand & Communications Strategist',
-        employmentType: 'Full-time',
-        status: 'Active',
-        location: 'London',
-        hireDate: getRelativeDate(130),
-        salary: 78000,
-      },
-      {
-        employeeId: 'EMP-1018',
-        firstName: 'Maya',
-        lastName: 'Patel',
-        email: 'maya.patel@workforce.internal',
-        phone: '+1 (555) 012-3456',
-        deptCode: 'MKT',
-        teamCode: 'GROWTH',
-        position: 'SEO & Performance Associate',
-        employmentType: 'Full-time',
-        status: 'On Leave', // On Leave
-        location: 'Remote',
-        hireDate: getRelativeDate(25), // New hire (< 30 days)
-        salary: 72000,
-      },
-
-      // Operations
-      {
-        employeeId: 'EMP-1019',
-        firstName: 'Brandon',
-        lastName: 'Hayes',
-        email: 'brandon.hayes@workforce.internal',
-        phone: '+1 (555) 123-4560',
-        deptCode: 'OPS',
-        teamCode: 'PLAT',
-        position: 'Operations Manager',
-        employmentType: 'Full-time',
-        status: 'Active',
-        location: 'New York',
-        hireDate: getRelativeDate(310),
-        salary: 115000,
-      },
-      {
-        employeeId: 'EMP-1020',
-        firstName: 'Hanna',
-        lastName: 'Berg',
-        email: 'hanna.berg@workforce.internal',
-        phone: '+49 30 9876543',
-        deptCode: 'OPS',
-        teamCode: 'PLAT',
-        position: 'Logistics Coordinator',
-        employmentType: 'Full-time',
-        status: 'Active',
-        location: 'Berlin',
-        hireDate: getRelativeDate(160),
-        salary: 62000,
-      },
-
       // Product & Design
       {
-        employeeId: 'EMP-1021',
-        firstName: 'Gabriel',
-        lastName: 'Silva',
-        email: 'gabriel.silva@workforce.internal',
-        phone: '+1 (555) 234-5670',
+        employeeId: 'EMP-1025',
+        firstName: 'Lucas',
+        lastName: 'Mendoza',
+        email: 'lucas.mendoza@workforce.internal',
+        phone: '+1 (555) 456-7892',
         deptCode: 'PROD',
         teamCode: 'DESIGN',
-        position: 'Head of Product Experience',
+        position: 'Lead Product Manager',
         employmentType: 'Full-time',
         status: 'Active',
         location: 'San Francisco',
-        hireDate: getRelativeDate(330),
-        salary: 160000,
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(400),
+        yearsOfExperience: 9,
+        salary: 150000,
+        skills: [
+          { name: 'Agile & Scrum Leadership', proficiency: 'Expert', certified: true },
+          { name: 'Executive Communication', proficiency: 'Expert', certified: false },
+        ],
       },
       {
-        employeeId: 'EMP-1022',
-        firstName: 'Amara',
-        lastName: 'Okafor',
-        email: 'amara.okafor@workforce.internal',
-        phone: '+44 20 8345 6789',
+        employeeId: 'EMP-1026',
+        firstName: 'Aria',
+        lastName: 'Sterling',
+        email: 'aria.sterling@workforce.internal',
+        phone: '+1 (555) 567-8903',
         deptCode: 'PROD',
         teamCode: 'DESIGN',
         position: 'Senior UI/UX Designer',
         employmentType: 'Full-time',
         status: 'Active',
-        location: 'London',
-        hireDate: getRelativeDate(140),
-        salary: 82000,
-      },
-      {
-        employeeId: 'EMP-1023',
-        firstName: 'Rohit',
-        lastName: 'Verma',
-        email: 'rohit.verma@workforce.internal',
-        phone: '+91 80 5678 9012',
-        deptCode: 'PROD',
-        teamCode: 'DESIGN',
-        position: 'Product Design Intern',
-        employmentType: 'Intern',
-        status: 'Active',
-        location: 'Bengaluru',
-        hireDate: getRelativeDate(8), // New hire (< 30 days)
-        salary: 32000,
-      },
-      {
-        employeeId: 'EMP-1024',
-        firstName: 'Claire',
-        lastName: 'Morrison',
-        email: 'claire.morrison@workforce.internal',
-        phone: '+1 (555) 345-6781',
-        deptCode: 'ENG',
-        teamCode: 'BE',
-        position: 'Backend Engineer',
-        employmentType: 'Full-time',
-        status: 'Inactive', // Inactive
-        location: 'Remote',
+        location: 'New York',
+        workLocationType: 'Hybrid',
         hireDate: getRelativeDate(220),
-        salary: 105000,
+        yearsOfExperience: 5,
+        salary: 125000,
+        skills: [
+          { name: 'Design Systems & Figma', proficiency: 'Expert', certified: true },
+        ],
+      },
+      // Finance
+      {
+        employeeId: 'EMP-1015',
+        firstName: 'Thomas',
+        lastName: 'Wright',
+        email: 'thomas.wright@workforce.internal',
+        phone: '+1 (555) 456-7891',
+        deptCode: 'FIN',
+        teamCode: 'FPNA',
+        position: 'Financial Planning Analyst',
+        employmentType: 'Full-time',
+        status: 'Active',
+        location: 'New York',
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(300),
+        yearsOfExperience: 5,
+        salary: 110000,
+        skills: [
+          { name: 'Financial Modeling & Forecasting', proficiency: 'Advanced', certified: true },
+        ],
+      },
+      // Exited Employees (Terminated) to power Exits KPI and Attrition Rate
+      {
+        employeeId: 'EMP-1031',
+        firstName: 'Jordan',
+        lastName: 'Bell',
+        email: 'jordan.bell@workforce.internal',
+        phone: '+1 (555) 888-9991',
+        deptCode: 'ENG',
+        teamCode: 'FE',
+        position: 'Senior Software Engineer',
+        employmentType: 'Full-time',
+        status: 'Terminated',
+        location: 'San Francisco',
+        workLocationType: 'Office',
+        hireDate: getRelativeDate(450),
+        exitDate: getRelativeDate(25),
+        exitReason: 'Career Advancement',
+        yearsOfExperience: 5,
+        salary: 130000,
+        skills: [
+          { name: 'React.js & Next.js', proficiency: 'Advanced', certified: true },
+        ],
+      },
+      {
+        employeeId: 'EMP-1032',
+        firstName: 'Chloe',
+        lastName: 'Bennett',
+        email: 'chloe.bennett@workforce.internal',
+        phone: '+1 (555) 888-9992',
+        deptCode: 'MKT',
+        teamCode: 'GROWTH',
+        position: 'Growth Marketing Lead',
+        employmentType: 'Full-time',
+        status: 'Terminated',
+        location: 'Remote',
+        workLocationType: 'Work From Home',
+        hireDate: getRelativeDate(380),
+        exitDate: getRelativeDate(40),
+        exitReason: 'Relocation',
+        yearsOfExperience: 4,
+        salary: 115000,
+        skills: [
+          { name: 'Executive Communication', proficiency: 'Intermediate', certified: false },
+        ],
       },
     ];
 
+    const seededEmployees = [];
     for (const emp of employeesData) {
       const dept = departmentMap.get(emp.deptCode);
       const team = teamMap.get(emp.teamCode);
-
       if (!dept) continue;
 
       const empPayload = {
@@ -482,22 +575,95 @@ const seedWorkforce = async () => {
         employmentType: emp.employmentType as any,
         status: emp.status as any,
         location: emp.location,
+        workLocationType: emp.workLocationType as any,
         hireDate: emp.hireDate,
+        exitDate: (emp as any).exitDate || null,
+        exitReason: (emp as any).exitReason || undefined,
+        yearsOfExperience: emp.yearsOfExperience || 3,
+        skills: emp.skills || [],
         salary: emp.salary,
         isDeleted: false,
       };
 
-      const existing = await Employee.findOne({ employeeId: emp.employeeId });
-      if (!existing) {
-        await Employee.create(empPayload);
-        console.log(`   + Seeded employee: ${emp.firstName} ${emp.lastName} (${emp.employeeId}) - ${emp.position}`);
-      } else {
-        await Employee.updateOne({ employeeId: emp.employeeId }, { $set: empPayload });
-        console.log(`   * Updated employee: ${emp.firstName} ${emp.lastName} (${emp.employeeId})`);
-      }
+      const saved = await Employee.findOneAndUpdate(
+        { employeeId: emp.employeeId },
+        empPayload,
+        { upsert: true, new: true }
+      );
+      seededEmployees.push(saved);
+      console.log(`   + Seeded: ${emp.firstName} ${emp.lastName} (${emp.position}) - ${emp.status}`);
     }
 
-    console.log('\n🎉 Workforce data seeding completed successfully!');
+    // -------------------------------------------------------------
+    // 9. SEED ATTENDANCE RECORDS
+    // -------------------------------------------------------------
+    console.log('\n📅 Seeding Attendance Records...');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const emp of seededEmployees.slice(0, 10)) {
+      if (emp.status === 'Active') {
+        const checkIn = new Date(today);
+        checkIn.setHours(9, Math.floor(Math.random() * 20), 0);
+        await Attendance.findOneAndUpdate(
+          { employeeId: emp._id, date: today },
+          {
+            employeeId: emp._id,
+            date: today,
+            checkIn,
+            status: 'Present',
+            workLocation: emp.workLocationType || 'Office',
+            hoursWorked: 8,
+          },
+          { upsert: true }
+        );
+      }
+    }
+    console.log('   + Seeded Attendance for Active Employees');
+
+    // -------------------------------------------------------------
+    // 10. SEED PERFORMANCE REVIEWS
+    // -------------------------------------------------------------
+    console.log('\n⭐ Seeding Performance Appraisals...');
+    for (const emp of seededEmployees.slice(0, 8)) {
+      await Performance.findOneAndUpdate(
+        { employeeId: emp._id, reviewPeriod: '2026-Q1' },
+        {
+          employeeId: emp._id,
+          reviewPeriod: '2026-Q1',
+          rating: 4 + Math.random() * 0.9,
+          goals: ['Deliver core platform features', 'Mentor team members'],
+          goalsAchievedRate: 95,
+          feedback: 'Exceptional performance and proactive collaboration.',
+          status: 'Approved',
+        },
+        { upsert: true }
+      );
+    }
+    console.log('   + Seeded Performance Appraisals');
+
+    // -------------------------------------------------------------
+    // 11. SEED PLACEMENTS
+    // -------------------------------------------------------------
+    console.log('\n🚀 Seeding Placements...');
+    for (const emp of seededEmployees.slice(0, 5)) {
+      await Placement.findOneAndUpdate(
+        { employeeId: emp._id },
+        {
+          placementId: `PLC-${emp.employeeId}`,
+          employeeId: emp._id,
+          departmentId: emp.departmentId,
+          teamId: emp.teamId,
+          location: emp.location,
+          placementDate: emp.hireDate,
+          status: 'Confirmed',
+        },
+        { upsert: true }
+      );
+    }
+    console.log('   + Seeded Placements');
+
+    console.log('\n🎉 ALL 12 SPRINT 1 WORKFORCE DATA COLLECTIONS SEEDED SUCCESSFULLY!');
     process.exit(0);
   } catch (error) {
     console.error('❌ Seeding failed:', error);

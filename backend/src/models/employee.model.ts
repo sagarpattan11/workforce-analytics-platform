@@ -6,6 +6,13 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 export type EmploymentType = 'Full-time' | 'Part-time' | 'Contract' | 'Intern';
 export type EmployeeStatus = 'Active' | 'Inactive' | 'On Leave' | 'Terminated';
 
+export interface IEmployeeSkill {
+  skillId?: mongoose.Types.ObjectId;
+  name: string;
+  proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  certified?: boolean;
+}
+
 export interface IEmployee extends Document {
   employeeId: string;
   firstName: string;
@@ -14,13 +21,19 @@ export interface IEmployee extends Document {
   phone?: string;
   departmentId: mongoose.Types.ObjectId;
   teamId?: mongoose.Types.ObjectId;
+  roleId?: mongoose.Types.ObjectId;
   position: string;
   employmentType: EmploymentType;
   status: EmployeeStatus;
   location: string;
+  workLocationType?: 'Office' | 'Work From Home' | 'Hybrid';
   hireDate: Date;
+  yearsOfExperience?: number;
   salary?: number;
   avatarUrl?: string;
+  skills?: IEmployeeSkill[];
+  exitDate?: Date;
+  exitReason?: string;
   isDeleted: boolean; // Soft delete flag
   deletedAt?: Date;
   createdAt: Date;
@@ -80,6 +93,12 @@ const employeeSchema = new Schema<IEmployee>(
       default: null,
       index: true,
     },
+    roleId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Role',
+      default: null,
+      index: true,
+    },
     position: {
       type: String,
       required: [true, 'Job position is required'],
@@ -104,9 +123,21 @@ const employeeSchema = new Schema<IEmployee>(
       trim: true,
       index: true,
     },
+    workLocationType: {
+      type: String,
+      enum: ['Office', 'Work From Home', 'Hybrid'],
+      default: 'Office',
+      index: true,
+    },
     hireDate: {
       type: Date,
       required: [true, 'Hire date is required'],
+      index: true,
+    },
+    yearsOfExperience: {
+      type: Number,
+      default: 2,
+      min: [0, 'Years of experience cannot be negative'],
       index: true,
     },
     salary: {
@@ -114,6 +145,26 @@ const employeeSchema = new Schema<IEmployee>(
       min: [0, 'Salary cannot be negative'],
     },
     avatarUrl: {
+      type: String,
+      trim: true,
+    },
+    skills: [
+      {
+        skillId: { type: Schema.Types.ObjectId, ref: 'Skill' },
+        name: { type: String, required: true },
+        proficiency: {
+          type: String,
+          enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+          default: 'Intermediate',
+        },
+        certified: { type: Boolean, default: false },
+      },
+    ],
+    exitDate: {
+      type: Date,
+      default: null,
+    },
+    exitReason: {
       type: String,
       trim: true,
     },
