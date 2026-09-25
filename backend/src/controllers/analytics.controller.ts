@@ -50,8 +50,8 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
       }
     }
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
@@ -68,15 +68,16 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
       totalDepartments,
       totalLocations,
       openPositionsData,
+      allMatchingEmployees,
     ] = await Promise.all([
       // Total employees matching filter
       Employee.countDocuments(empMatch),
       // Active employees matching filter
       Employee.countDocuments({ ...empMatch, status: 'Active' }),
-      // New hires (within 30 days or within custom date range)
+      // New hires (this calendar month or within custom date range)
       Employee.countDocuments({
         ...empMatch,
-        hireDate: { $gte: thirtyDaysAgo },
+        ...(empMatch.hireDate ? {} : { hireDate: { $gte: startOfCurrentMonth } }),
       }),
       // Employee exits (terminated status or exitDate recorded)
       Employee.countDocuments({
@@ -104,6 +105,8 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
           },
         },
       ]),
+      // All matching employees for exact mathematical headcount growth
+      Employee.find(empMatch, 'hireDate exitDate status').lean(),
     ]);
 
     const openPositions =
@@ -178,7 +181,6 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
         },
         { $project: { role: '$_id', count: 1, _id: 0 } },
         { $sort: { count: -1 } },
-        { $limit: 8 },
       ]),
 
       // Chart 3: Location Distribution
@@ -271,32 +273,62 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
       }
     });
 
-    // Format Monthly Hires & Cumulative Growth
+    // Format Role Distribution:
+    // If more than 8 distinct roles exist, show top 7 roles + aggregated 'Other Roles'
+    // so the sum of counts across the chart is mathematically guaranteed to equal totalEmployees exactly!
+    const MAX_TOP_ROLES = 7;
+    let roleDistribution: { role: string; count: number }[] = [];
+    if (employeesByRole.length <= 8) {
+      roleDistribution = employeesByRole;
+    } else {
+      const topRoles = employeesByRole.slice(0, MAX_TOP_ROLES);
+      const otherCount = employeesByRole
+        .slice(MAX_TOP_ROLES)
+        .reduce((sum: number, item: any) => sum + item.count, 0);
+      const remainingCount = employeesByRole.length - MAX_TOP_ROLES;
+      roleDistribution = [
+        ...topRoles,
+        { role: `Other Roles (${remainingCount})`, count: otherCount },
+      ];
+    }
+
+    // Format Monthly Hires & Cumulative Growth (Past 12 Months)
+    // Uses real database hire dates so the latest month's totalHeadcount
+    // is mathematically guaranteed to equal totalEmployees exactly.
     const monthNames = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
 
     const employeeGrowth: { month: string; newHires: number; totalHeadcount: number }[] = [];
-    let rollingCount = Math.max(0, totalEmployees - 12);
 
     for (let i = 11; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = d.getFullYear();
-      const month = d.getMonth() + 1;
-      const monthLabel = `${monthNames[month - 1]} ${year.toString().slice(-2)}`;
+      const month = d.getMonth();
+      const monthLabel = `${monthNames[month]} ${year.toString().slice(-2)}`;
 
-      const found = monthlyHiresRaw.find(
-        (m: any) => m._id.year === year && m._id.month === month
-      );
-      const hires = found ? found.count : Math.floor(Math.random() * 2) + 1;
-      rollingCount += hires;
+      const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+      const endOfMonth = i === 0 ? now : new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+      // New hires specifically within this calendar month
+      const monthNewHires = allMatchingEmployees.filter((e: any) => {
+        if (!e.hireDate) return false;
+        const h = new Date(e.hireDate);
+        return h >= startOfMonth && h <= endOfMonth;
+      }).length;
+
+      // Cumulative headcount up to this month end
+      // For i === 0 (current month), this strictly equals totalEmployees!
+      const monthHeadcount = allMatchingEmployees.filter((e: any) => {
+        if (!e.hireDate) return true;
+        return new Date(e.hireDate) <= endOfMonth;
+      }).length;
 
       employeeGrowth.push({
         month: monthLabel,
-        newHires: hires,
-        totalHeadcount: rollingCount,
+        newHires: monthNewHires,
+        totalHeadcount: monthHeadcount,
       });
     }
 
@@ -307,7 +339,7 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
         charts: {
           employeeGrowth,
           employeesByDepartment,
-          roleDistribution: employeesByRole,
+          roleDistribution,
           employeesByLocation,
           employeeStatusDistribution,
           experienceDistribution,

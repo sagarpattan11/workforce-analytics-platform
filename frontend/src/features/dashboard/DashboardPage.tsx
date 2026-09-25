@@ -187,7 +187,7 @@ export const DashboardPage: React.FC = () => {
         {
           title: 'New Employees',
           value: data.kpi.newEmployees,
-          subtitle: 'Joined in past 30 days',
+          subtitle: 'Joined this month',
           icon: <UserPlus size={22} color="#8B5CF6" />,
           bgColor: 'rgba(139, 92, 246, 0.1)',
           textColor: '#8B5CF6',

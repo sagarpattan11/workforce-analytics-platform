@@ -21,6 +21,11 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
 } from '@mui/material';
 import {
   Award,
@@ -116,6 +121,37 @@ export const AnalyticsPage: React.FC = () => {
   const [selectedDept, setSelectedDept] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Enroll Team Dialog & Feedback State
+  const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
+  const [selectedTraining, setSelectedTraining] = useState<any | null>(null);
+  const [targetTeam, setTargetTeam] = useState('Engineering');
+  const [enrolling, setEnrolling] = useState(false);
+  const [enrollSuccessMsg, setEnrollSuccessMsg] = useState<string | null>(null);
+
+  const handleOpenEnroll = (training: any) => {
+    setSelectedTraining(training);
+    setEnrollDialogOpen(true);
+  };
+
+  const handleCloseEnroll = () => {
+    if (!enrolling) {
+      setEnrollDialogOpen(false);
+      setSelectedTraining(null);
+    }
+  };
+
+  const handleConfirmEnroll = () => {
+    setEnrolling(true);
+    setTimeout(() => {
+      setEnrolling(false);
+      setEnrollDialogOpen(false);
+      setEnrollSuccessMsg(
+        `✅ Successfully enrolled ${targetTeam} team into "${selectedTraining?.title}"! 6 employee learning paths activated.`
+      );
+      setSelectedTraining(null);
+    }, 600);
+  };
 
   // Fetch departments list
   useEffect(() => {
@@ -640,7 +676,12 @@ export const AnalyticsPage: React.FC = () => {
                         <Typography variant="caption" color="text.secondary">
                           Success: <strong>{tr.completionRate}%</strong>
                         </Typography>
-                        <Button variant="contained" size="small" sx={{ textTransform: 'none' }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{ textTransform: 'none' }}
+                          onClick={() => handleOpenEnroll(tr)}
+                        >
                           Enroll Team
                         </Button>
                       </Stack>
@@ -652,6 +693,85 @@ export const AnalyticsPage: React.FC = () => {
           </Card>
         </Box>
       ) : null}
+
+      {/* ------------------------------------------------------------- */}
+      {/* ENROLL TEAM CONFIRMATION DIALOG */}
+      {/* ------------------------------------------------------------- */}
+      <Dialog
+        open={enrollDialogOpen}
+        onClose={handleCloseEnroll}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2.5, p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>Enroll Team in Training</DialogTitle>
+        <DialogContent dividers>
+          {selectedTraining && (
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+                <Typography variant="subtitle2" fontWeight={700}>
+                  {selectedTraining.title}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Target Skill: <strong>{selectedTraining.targetSkill}</strong> • {selectedTraining.provider}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Duration: {selectedTraining.durationHours} hrs • Level: {selectedTraining.difficulty}
+                </Typography>
+              </Box>
+
+              <FormControl fullWidth size="small">
+                <InputLabel id="target-dept-label">Target Team / Department</InputLabel>
+                <Select
+                  labelId="target-dept-label"
+                  value={targetTeam}
+                  label="Target Team / Department"
+                  onChange={(e) => setTargetTeam(e.target.value)}
+                >
+                  <MenuItem value="Engineering">Engineering Team (6 Members)</MenuItem>
+                  <MenuItem value="Product & Design">Product & Design Team (4 Members)</MenuItem>
+                  <MenuItem value="Data Science">Data & AI Analytics (5 Members)</MenuItem>
+                  <MenuItem value="Marketing">Growth & Marketing (3 Members)</MenuItem>
+                  <MenuItem value="Operations">Workforce Operations (4 Members)</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Alert severity="info" sx={{ borderRadius: 1.5, py: 0.5 }}>
+                Enrolling this team will assign courses to employees with detected skill gaps and schedule calendar sync.
+              </Alert>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={handleCloseEnroll} disabled={enrolling} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleConfirmEnroll}
+            disabled={enrolling}
+            startIcon={enrolling ? <CircularProgress size={16} color="inherit" /> : <GraduationCap size={16} />}
+          >
+            {enrolling ? 'Enrolling...' : 'Confirm Enrollment'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* SUCCESS SNACKBAR */}
+      <Snackbar
+        open={Boolean(enrollSuccessMsg)}
+        autoHideDuration={4000}
+        onClose={() => setEnrollSuccessMsg(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setEnrollSuccessMsg(null)}
+          severity="success"
+          sx={{ width: '100%', borderRadius: 2, boxShadow: 3 }}
+        >
+          {enrollSuccessMsg}
+        </Alert>
+      </Snackbar>
     </PageShell>
   );
 };
