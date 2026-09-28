@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -25,6 +25,8 @@ import {
   Clock,
   Ban,
   AlertTriangle,
+  Archive,
+  RotateCcw,
 } from 'lucide-react';
 import { PageShell } from '../../components/layout/PageShell';
 import { DataTableShell, Column } from '../../components/common/DataTableShell';
@@ -64,6 +66,7 @@ export const EmployeesPage: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortBy] = useState('createdAt');
   const [sortOrder] = useState<'asc' | 'desc'>('desc');
+  const [viewArchived, setViewArchived] = useState(false);
 
   // Modal & Dialog states
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -80,9 +83,6 @@ export const EmployeesPage: React.FC = () => {
   // Status Action Menu state
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [activeRowEmployee, setActiveRowEmployee] = useState<IEmployee | null>(null);
-
-  // Debounce search query timer
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { id: routeEmployeeId } = useParams<{ id?: string }>();
   const navigate = useNavigate();
@@ -125,6 +125,7 @@ export const EmployeesPage: React.FC = () => {
         location: filters.location || undefined,
         sortBy,
         sortOrder,
+        isDeleted: viewArchived ? true : undefined,
       });
 
       setEmployees(response.data || []);
@@ -137,23 +138,11 @@ export const EmployeesPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, filters, sortBy, sortOrder]);
+  }, [page, rowsPerPage, filters, sortBy, sortOrder, viewArchived]);
 
-  // Trigger fetch with debounce for search keyword
+  // Fetch employees whenever debounced filters, page, rowsPerPage, or sorting change
   useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    searchTimeoutRef.current = setTimeout(() => {
-      fetchEmployees();
-    }, 300);
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
+    fetchEmployees();
   }, [fetchEmployees]);
 
   // Handle Filter Change
@@ -209,6 +198,17 @@ export const EmployeesPage: React.FC = () => {
       setError(err.message || 'Failed to delete employee');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  // Handle Restore Soft-Deleted Employee to Active
+  const handleRestoreEmployee = async (emp: IEmployee) => {
+    try {
+      await employeeService.restoreEmployee(emp._id);
+      setSuccessMsg(`Employee "${emp.fullName}" (${emp.employeeId}) has been restored to Active.`);
+      fetchEmployees();
+    } catch (err: any) {
+      setError(err.message || 'Failed to restore employee');
     }
   };
 
@@ -343,6 +343,17 @@ export const EmployeesPage: React.FC = () => {
       label: 'Status',
       minWidth: 120,
       render: (row) => {
+        if (row.isDeleted) {
+          return (
+            <Chip
+              label="Deleted"
+              color="error"
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 600, fontSize: '0.75rem', height: 24 }}
+            />
+          );
+        }
         const { color, icon } = getStatusChipProps(row.status);
         return (
           <Chip
@@ -409,37 +420,61 @@ export const EmployeesPage: React.FC = () => {
       minWidth: 120,
       align: 'right',
       render: (row) => (
-        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-          <Tooltip title="View Profile">
-            <IconButton
-              size="small"
-              onClick={() => handleOpenDetailsModal(row)}
-              aria-label="View profile"
-            >
-              <Eye size={16} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Edit Details">
-            <IconButton
-              size="small"
-              onClick={() => handleOpenEditModal(row)}
-              aria-label="Edit employee"
-            >
-              <Edit2 size={16} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="More options">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                setMenuAnchor(e.currentTarget);
-                setActiveRowEmployee(row);
-              }}
-              aria-label="More actions"
-            >
-              <MoreVertical size={16} />
-            </IconButton>
-          </Tooltip>
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+          {viewArchived || row.isDeleted ? (
+            <Tooltip title="Restore employee to Active">
+              <Button
+                variant="outlined"
+                color="success"
+                size="small"
+                startIcon={<RotateCcw size={14} />}
+                onClick={() => handleRestoreEmployee(row)}
+                sx={{
+                  borderRadius: 1.5,
+                  py: 0.25,
+                  px: 1.2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                }}
+              >
+                Restore
+              </Button>
+            </Tooltip>
+          ) : (
+            <>
+              <Tooltip title="View Profile">
+                <IconButton
+                  size="small"
+                  onClick={() => handleOpenDetailsModal(row)}
+                  aria-label="View profile"
+                >
+                  <Eye size={16} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Edit Details">
+                <IconButton
+                  size="small"
+                  onClick={() => handleOpenEditModal(row)}
+                  aria-label="Edit employee"
+                >
+                  <Edit2 size={16} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="More options">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    setMenuAnchor(e.currentTarget);
+                    setActiveRowEmployee(row);
+                  }}
+                  aria-label="More actions"
+                >
+                  <MoreVertical size={16} />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </Stack>
       ),
     },
@@ -449,36 +484,91 @@ export const EmployeesPage: React.FC = () => {
     <PageShell
       title="Employee Directory"
       description="Manage organization headcount, role assignments, department structures, and employee profiles."
+      disablePaper
       actions={
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <Chip
-            label={`${totalCount} Total Employees`}
-            color="primary"
-            variant="outlined"
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-          <Tooltip title="Refresh employee list">
-            <span>
-              <IconButton
-                onClick={fetchEmployees}
-                size="small"
-                disabled={loading}
-                aria-label="Refresh list"
-              >
-                <RefreshCw size={18} />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<UserPlus size={16} />}
-            onClick={handleOpenCreateModal}
-            sx={{ borderRadius: 1.5 }}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.5}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
+          {/* Top row on mobile: Chip + Refresh button */}
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            justifyContent={{ xs: 'space-between', sm: 'flex-start' }}
           >
-            Add Employee
-          </Button>
+            <Chip
+              label={viewArchived ? `${totalCount} Archived` : `${totalCount} Total Employees`}
+              color={viewArchived ? 'warning' : 'primary'}
+              variant="outlined"
+              size="small"
+              sx={{ fontWeight: 600 }}
+            />
+            <Tooltip title="Refresh employee list">
+              <span>
+                <IconButton
+                  onClick={fetchEmployees}
+                  size="small"
+                  disabled={loading}
+                  aria-label="Refresh list"
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 1.5,
+                    p: 0.75,
+                  }}
+                >
+                  <RefreshCw size={16} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Stack>
+
+          {/* Bottom row on mobile: Action buttons side by side with equal flex */}
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            <Button
+              variant={viewArchived ? 'contained' : 'outlined'}
+              color={viewArchived ? 'warning' : 'inherit'}
+              size="small"
+              startIcon={<Archive size={16} />}
+              onClick={() => {
+                setViewArchived((prev) => !prev);
+                setPage(0);
+              }}
+              sx={{
+                borderRadius: 1.5,
+                textTransform: 'none',
+                fontWeight: 600,
+                flex: { xs: 1, sm: 'none' },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {viewArchived ? 'Active List' : 'Archived / Trash'}
+            </Button>
+            {!viewArchived && (
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<UserPlus size={16} />}
+                onClick={handleOpenCreateModal}
+                sx={{
+                  borderRadius: 1.5,
+                  fontWeight: 600,
+                  flex: { xs: 1, sm: 'none' },
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Add Employee
+              </Button>
+            )}
+          </Stack>
         </Stack>
       }
     >
@@ -525,8 +615,12 @@ export const EmployeesPage: React.FC = () => {
             setRowsPerPage(newLimit);
             setPage(0);
           }}
-          emptyTitle="No Employees Found"
-          emptyDescription="No employee records matched your filter criteria. Try clearing search filters or add a new employee."
+          emptyTitle={viewArchived ? 'No Archived / Deleted Employees' : 'No Employees Found'}
+          emptyDescription={
+            viewArchived
+              ? 'There are currently no soft-deleted employee records in the trash.'
+              : 'No employee records matched your filter criteria. Try clearing search filters or add a new employee.'
+          }
         />
 
         {/* Context Action Menu for Quick Status Change & Delete */}

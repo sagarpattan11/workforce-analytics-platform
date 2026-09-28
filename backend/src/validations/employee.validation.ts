@@ -98,6 +98,13 @@ export const employeeQuerySchema = z.object({
   location: z.string().optional(),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  isDeleted: z
+    .preprocess((val) => {
+      if (val === 'true' || val === true) return true;
+      if (val === 'false' || val === false) return false;
+      return undefined;
+    }, z.boolean().optional())
+    .optional(),
 });
 
 // Inferred TypeScript types

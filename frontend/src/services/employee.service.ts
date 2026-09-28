@@ -74,6 +74,7 @@ export interface EmployeeQueryFilters {
   location?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  isDeleted?: boolean;
 }
 
 export interface PaginationMeta {
@@ -182,6 +183,15 @@ export const employeeService = {
    */
   async deleteEmployee(id: string): Promise<{ success: boolean; message: string }> {
     const response = await apiClient.delete<{ success: boolean; message: string }>(`/employees/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Restores a soft-deleted employee back to Active status
+   * PATCH /api/v1/employees/:id/restore
+   */
+  async restoreEmployee(id: string): Promise<{ success: boolean; message: string; data: IEmployee }> {
+    const response = await apiClient.patch<{ success: boolean; message: string; data: IEmployee }>(`/employees/${id}/restore`);
     return response.data;
   },
 

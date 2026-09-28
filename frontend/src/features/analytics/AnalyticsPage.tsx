@@ -204,9 +204,10 @@ export const AnalyticsPage: React.FC = () => {
     <PageShell
       title="Skill & Competency Analytics"
       description="Workforce skill distribution, capability gap analysis, and tailored training recommendations."
+      disablePaper
       actions={
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <FormControl size="small" sx={{ minWidth: 180 }}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 180 } }}>
             <InputLabel id="dept-filter-analytics">Department Filter</InputLabel>
             <Select
               labelId="dept-filter-analytics"

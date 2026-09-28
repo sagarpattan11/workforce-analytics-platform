@@ -52,7 +52,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: LayoutDashboard,
     group: 'Overview',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'Workforce overview, key metrics and departmental summary',
   },
 
@@ -64,7 +64,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: Users,
     group: 'Workforce',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'Team Lead', 'HR', 'Manager'],
     description: 'Workforce directory, headcount and employee profiles',
   },
   {
@@ -72,7 +72,7 @@ export const APP_ROUTES: AppRoute[] = [
     label: 'Employee Details',
     breadcrumbLabel: 'Employee Profile',
     inSidebar: false,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'Team Lead', 'HR', 'Manager'],
     description: 'Detailed employee profile, skills and employment history',
   },
 
@@ -84,7 +84,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: Clock,
     group: 'Operations',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'Attendance logs, check-in history and time tracking',
   },
   {
@@ -92,7 +92,7 @@ export const APP_ROUTES: AppRoute[] = [
     label: 'Attendance History',
     breadcrumbLabel: 'Attendance History',
     inSidebar: false,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'Historical attendance records and time-tracking data',
   },
   {
@@ -100,7 +100,7 @@ export const APP_ROUTES: AppRoute[] = [
     label: 'Attendance Corrections',
     breadcrumbLabel: 'Attendance Corrections',
     inSidebar: false,
-    allowedRoles: ['Admin', 'HR', 'Manager'],
+    allowedRoles: ['Admin', 'HR Manager', 'Department Manager', 'HR', 'Manager'],
     description: 'Review and approve attendance punch corrections',
   },
   {
@@ -110,7 +110,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: CalendarOff,
     group: 'Operations',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'Leave applications, approvals and absence calendar',
   },
   {
@@ -118,7 +118,7 @@ export const APP_ROUTES: AppRoute[] = [
     label: 'Absence Calendar',
     breadcrumbLabel: 'Absence Calendar',
     inSidebar: false,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'Team and department leave schedule calendar',
   },
   {
@@ -128,7 +128,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: CalendarCheck2,
     group: 'Operations',
     inSidebar: true,
-    allowedRoles: ['Admin', 'Manager', 'Team Lead'],
+    allowedRoles: ['Admin', 'Department Manager', 'Team Lead', 'Manager'],
     description: 'Shift rosters, scheduling assignments and shift swaps',
   },
   {
@@ -136,7 +136,7 @@ export const APP_ROUTES: AppRoute[] = [
     label: 'Shift Management',
     breadcrumbLabel: 'Shifts',
     inSidebar: false,
-    allowedRoles: ['Admin', 'Manager', 'Team Lead'],
+    allowedRoles: ['Admin', 'Department Manager', 'Team Lead', 'Manager'],
     description: 'Shift creation, assignment, and roster management',
   },
   {
@@ -144,7 +144,7 @@ export const APP_ROUTES: AppRoute[] = [
     label: 'Shift Swaps',
     breadcrumbLabel: 'Shift Swaps',
     inSidebar: false,
-    allowedRoles: ['Admin', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'Department Manager', 'Team Lead', 'Employee', 'Manager'],
     description: 'Employee shift swap requests and manager approvals',
   },
 
@@ -166,7 +166,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: ShieldCheck,
     group: 'Management',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'HR'],
     description: 'Labor compliance, policy adherence and regulatory checks',
   },
   {
@@ -176,7 +176,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: CreditCard,
     group: 'Management',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Employee', 'HR'],
     description: 'Compensation structures, payslips and payroll cycles',
   },
   {
@@ -186,7 +186,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: FileText,
     group: 'Management',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager'],
     description: 'Report builder, export tools and executive analytics',
   },
 
@@ -198,7 +198,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: Bell,
     group: 'System',
     inSidebar: true,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'System alerts, shift notifications and approval requests',
   },
   {
@@ -228,7 +228,7 @@ export const APP_ROUTES: AppRoute[] = [
     icon: User,
     group: 'System',
     inSidebar: false,
-    allowedRoles: ['Admin', 'HR', 'Manager', 'Team Lead', 'Employee'],
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'Team Lead', 'Employee', 'HR', 'Manager'],
     description: 'Personal user profile and account details',
   },
 
@@ -313,12 +313,31 @@ export const APP_ROUTES: AppRoute[] = [
   },
 ];
 
+// Role equivalence mapping for enterprise roles
+export const ROLE_ALIASES: Record<UserRole, UserRole[]> = {
+  Admin: ['Admin', 'Executive', 'HR Manager', 'Department Manager', 'HR', 'Manager', 'Team Lead', 'Employee'],
+  Executive: ['Executive', 'Manager', 'Admin'],
+  'HR Manager': ['HR Manager', 'HR'],
+  'Department Manager': ['Department Manager', 'Manager'],
+  Manager: ['Manager', 'Department Manager'],
+  HR: ['HR', 'HR Manager'],
+  'Team Lead': ['Team Lead'],
+  Employee: ['Employee'],
+};
+
+// Check if a role has access to a specific route
+export const hasRouteAccess = (allowedRoles?: UserRole[], currentRole: UserRole = 'Admin'): boolean => {
+  if (!allowedRoles || allowedRoles.length === 0) return true;
+  if (currentRole === 'Admin') return true;
+  const effectiveRoles = [currentRole, ...(ROLE_ALIASES[currentRole] || [])];
+  return allowedRoles.some((r) => effectiveRoles.includes(r));
+};
+
 // Helper: Filter routes for the Sidebar by user role
 export const getSidebarRoutes = (currentRole: UserRole): AppRoute[] => {
   return APP_ROUTES.filter((route) => {
     if (!route.inSidebar) return false;
-    if (!route.allowedRoles) return true;
-    return route.allowedRoles.includes(currentRole);
+    return hasRouteAccess(route.allowedRoles, currentRole);
   });
 };
 

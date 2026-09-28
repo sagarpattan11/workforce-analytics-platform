@@ -3,7 +3,6 @@ import { useLocation, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   IconButton,
-  InputBase,
   Badge,
   Avatar,
   Menu,
@@ -16,11 +15,9 @@ import {
   Link,
   useTheme,
   useMediaQuery,
-  Paper,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Search,
   Sun,
   Moon,
   Bell,
@@ -45,7 +42,6 @@ export const Header: React.FC<HeaderProps> = ({
   onRoleChange,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
   const { resolvedMode, toggleTheme } = useAppTheme();
@@ -144,47 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </Box>
 
-      {/* 2. Middle: Global Search Placeholder (Desktop / Tablet) */}
-      {!isMobile && (
-        <Paper
-          component="form"
-          elevation={0}
-          onSubmit={(e) => e.preventDefault()}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            width: { md: 280, lg: 380 },
-            px: 1.5,
-            py: 0.5,
-            bgcolor: 'rgba(255, 255, 255, 0.15)',
-            borderRadius: 2,
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            transition: 'background-color 0.2s, border-color 0.2s',
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.22)',
-              borderColor: 'rgba(255, 255, 255, 0.4)',
-            },
-          }}
-        >
-          <Search size={16} color="rgba(255, 255, 255, 0.85)" />
-          <InputBase
-            placeholder="Search employees, skills, reports... (Ctrl+K)"
-            sx={{
-              ml: 1.5,
-              flex: 1,
-              fontSize: '0.85rem',
-              color: '#FFFFFF',
-              '& input::placeholder': {
-                color: 'rgba(255, 255, 255, 0.75)',
-                opacity: 1,
-              },
-            }}
-            inputProps={{ 'aria-label': 'search workforce analytics' }}
-          />
-        </Paper>
-      )}
-
-      {/* 3. Right: Action Controls (Theme, Notifications, Profile) */}
+      {/* Right: Action Controls (Theme, Notifications, Profile) */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {/* Theme Toggle Button */}
         <Tooltip title={resolvedMode === 'dark' ? 'Switch to Light mode' : 'Switch to Dark mode'}>

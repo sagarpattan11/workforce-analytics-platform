@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Stack,
   TextField,
@@ -38,6 +38,55 @@ export const EmployeeFilters: React.FC<EmployeeFiltersProps> = ({
   onResetFilters,
   loading = false,
 }) => {
+  // Local state for smooth typing without triggering immediate parent API calls
+  const [searchQuery, setSearchQuery] = useState(filters.q);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync local query if parent filters change (e.g. on Reset)
+  useEffect(() => {
+    setSearchQuery(filters.q);
+  }, [filters.q]);
+
+  // Clean up debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // 500ms debounce: only call API when user stops typing
+    debounceTimerRef.current = setTimeout(() => {
+      onFilterChange('q', val);
+    }, 500);
+  };
+
+  const handleClearSearch = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    setSearchQuery('');
+    onFilterChange('q', '');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      onFilterChange('q', searchQuery);
+    }
+  };
+
   const hasActiveFilters = Boolean(
     filters.q || filters.departmentId || filters.status || filters.employmentType || filters.location
   );
@@ -58,24 +107,24 @@ export const EmployeeFilters: React.FC<EmployeeFiltersProps> = ({
         alignItems={{ xs: 'stretch', md: 'center' }}
         justifyContent="space-between"
       >
-        {/* Left: Search Bar */}
+        {/* Left: Search Bar with 500ms Debounce */}
         <TextField
           placeholder="Search by name, ID, email, title..."
           size="small"
-          value={filters.q}
-          onChange={(e) => onFilterChange('q', e.target.value)}
-          disabled={loading}
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onKeyDown={handleKeyDown}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
                 <Search size={18} color="#64748B" />
               </InputAdornment>
             ),
-            endAdornment: filters.q ? (
+            endAdornment: searchQuery ? (
               <InputAdornment position="end">
                 <IconButton
                   size="small"
-                  onClick={() => onFilterChange('q', '')}
+                  onClick={handleClearSearch}
                   edge="end"
                   aria-label="Clear search"
                 >

@@ -24,6 +24,7 @@ export interface PageShellProps {
   emptyTitle?: string;
   emptyDescription?: string;
   children?: React.ReactNode;
+  disablePaper?: boolean;
 }
 
 export const PageShell: React.FC<PageShellProps> = ({
@@ -38,6 +39,7 @@ export const PageShell: React.FC<PageShellProps> = ({
   emptyTitle = 'No Records Found',
   emptyDescription = 'There is currently no data to display for this module.',
   children,
+  disablePaper = false,
 }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -104,16 +106,20 @@ export const PageShell: React.FC<PageShellProps> = ({
 
       {/* 5. Main Content Area Slot */}
       {!loading && !error && !empty && (
-        <Paper
-          variant="outlined"
-          sx={{
-            p: { xs: 2, md: 3 },
-            borderRadius: 2,
-            bgcolor: 'background.paper',
-          }}
-        >
-          {children}
-        </Paper>
+        disablePaper ? (
+          <Box sx={{ width: '100%' }}>{children}</Box>
+        ) : (
+          <Paper
+            variant="outlined"
+            sx={{
+              p: { xs: 2, md: 3 },
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+            }}
+          >
+            {children}
+          </Paper>
+        )
       )}
     </Box>
   );

@@ -6,6 +6,7 @@ import {
   updateEmployee,
   updateEmployeeStatus,
   deleteEmployee,
+  restoreEmployee,
 } from '../controllers/employee.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 
@@ -30,6 +31,9 @@ router.put('/:id', requireAuth, updateEmployee);
 
 // PATCH /api/v1/employees/:id/status -> Quick status update (Active, On Leave, etc.)
 router.patch('/:id/status', requireAuth, updateEmployeeStatus);
+
+// PATCH /api/v1/employees/:id/restore -> Restore a soft-deleted employee to Active
+router.patch('/:id/restore', requireAuth, restoreEmployee);
 
 // DELETE /api/v1/employees/:id -> Soft delete employee
 router.delete('/:id', requireAuth, deleteEmployee);

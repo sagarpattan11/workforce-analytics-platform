@@ -28,10 +28,16 @@ export const getEmployees = async (req: Request, res: Response): Promise<void> =
       location,
       sortBy,
       sortOrder,
+      isDeleted,
     } = queryParams;
 
-    // Base filter: NEVER return soft-deleted employees
-    const filter: any = { isDeleted: { $ne: true } };
+    // Base filter: Return soft-deleted employees if isDeleted=true, otherwise exclude them
+    const filter: any = {};
+    if (isDeleted === true) {
+      filter.isDeleted = true;
+    } else {
+      filter.isDeleted = { $ne: true };
+    }
 
     // Search query: Case-insensitive match across name, email, employee ID, and position
     const searchTerm = q || search;
@@ -228,9 +234,19 @@ export const updateEmployee = async (req: Request, res: Response): Promise<void>
       }
     }
 
+    const updateDoc: any = { ...validatedData };
+    if (validatedData.status === 'Terminated') {
+      if (!updateDoc.exitDate) {
+        updateDoc.exitDate = new Date();
+      }
+    } else if (validatedData.status) {
+      updateDoc.exitDate = null;
+      updateDoc.exitReason = null;
+    }
+
     const employee = await Employee.findOneAndUpdate(
       { _id: id, isDeleted: { $ne: true } },
-      { $set: validatedData },
+      { $set: updateDoc },
       { new: true, runValidators: true }
     )
       .populate('departmentId', 'name code')
@@ -265,9 +281,18 @@ export const updateEmployeeStatus = async (req: Request, res: Response): Promise
     const { id } = req.params;
     const { status } = updateEmployeeStatusSchema.parse(req.body);
 
+    const updateDoc: any = { status };
+    if (status === 'Terminated') {
+      updateDoc.exitDate = new Date();
+    } else {
+      // When reactivating or changing away from Terminated, clear exitDate and exitReason
+      updateDoc.exitDate = null;
+      updateDoc.exitReason = null;
+    }
+
     const employee = await Employee.findOneAndUpdate(
       { _id: id, isDeleted: { $ne: true } },
-      { $set: { status } },
+      { $set: updateDoc },
       { new: true }
     );
 
@@ -317,5 +342,43 @@ export const deleteEmployee = async (req: Request, res: Response): Promise<void>
   } catch (error: any) {
     console.error('Error in deleteEmployee:', error);
     res.status(500).json({ success: false, message: 'Failed to delete employee', error: error.message });
+  }
+};
+
+/**
+ * 7. PATCH /api/v1/employees/:id/restore
+ * Restores a soft-deleted employee back to Active status
+ */
+export const restoreEmployee = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const employee = await Employee.findOneAndUpdate(
+      { _id: id, isDeleted: true },
+      {
+        $set: {
+          isDeleted: false,
+          deletedAt: null,
+          status: 'Active',
+          exitDate: null,
+          exitReason: null,
+        },
+      },
+      { new: true }
+    );
+
+    if (!employee) {
+      res.status(404).json({ success: false, message: 'Soft-deleted employee not found' });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Employee "${employee.fullName}" (${employee.employeeId}) has been restored to Active`,
+      data: employee,
+    });
+  } catch (error: any) {
+    console.error('Error in restoreEmployee:', error);
+    res.status(500).json({ success: false, message: 'Failed to restore employee', error: error.message });
   }
 };

@@ -79,10 +79,10 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
         ...empMatch,
         ...(empMatch.hireDate ? {} : { hireDate: { $gte: startOfCurrentMonth } }),
       }),
-      // Employee exits (terminated status or exitDate recorded)
+      // Employee exits (strictly employees with Terminated status)
       Employee.countDocuments({
         ...empMatch,
-        $or: [{ status: 'Terminated' }, { exitDate: { $ne: null } }],
+        status: 'Terminated',
       }),
       // Department count
       Department.countDocuments({ isActive: true }),

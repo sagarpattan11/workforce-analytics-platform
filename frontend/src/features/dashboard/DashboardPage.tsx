@@ -11,7 +11,6 @@ import {
   Alert,
   useTheme,
   CircularProgress,
-  TextField,
   MenuItem,
   FormControl,
   InputLabel,
@@ -88,7 +87,6 @@ export const DashboardPage: React.FC = () => {
 
   // Filters State
   const [departmentFilter, setDepartmentFilter] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateRangeFilter, setDateRangeFilter] = useState('ALL');
@@ -113,7 +111,6 @@ export const DashboardPage: React.FC = () => {
     try {
       const params: Record<string, string> = {};
       if (departmentFilter) params.department = departmentFilter;
-      if (roleFilter) params.role = roleFilter;
       if (locationFilter) params.location = locationFilter;
       if (statusFilter) params.status = statusFilter;
 
@@ -143,7 +140,7 @@ export const DashboardPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [departmentFilter, roleFilter, locationFilter, statusFilter, dateRangeFilter]);
+  }, [departmentFilter, locationFilter, statusFilter, dateRangeFilter]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -151,14 +148,13 @@ export const DashboardPage: React.FC = () => {
 
   const handleClearFilters = () => {
     setDepartmentFilter('');
-    setRoleFilter('');
     setLocationFilter('');
     setStatusFilter('');
     setDateRangeFilter('ALL');
   };
 
   const hasActiveFilters = Boolean(
-    departmentFilter || roleFilter || locationFilter || statusFilter || dateRangeFilter !== 'ALL'
+    departmentFilter || locationFilter || statusFilter || dateRangeFilter !== 'ALL'
   );
 
   // 8 Exact Sprint 1 KPI Cards
@@ -239,8 +235,9 @@ export const DashboardPage: React.FC = () => {
     <PageShell
       title="Workforce Dashboard"
       description="Live organizational metrics, talent pipeline health, and workforce analytics distribution."
+      disablePaper
       actions={
-        <Stack direction="row" spacing={1.5} alignItems="center">
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Chip
             icon={<TrendingUp size={14} />}
             label="Live MongoDB Analytics"
@@ -268,13 +265,22 @@ export const DashboardPage: React.FC = () => {
         variant="outlined"
         sx={{
           mb: 3,
-          p: 2,
-          borderRadius: 2.5,
+          p: { xs: 2, sm: 2 },
+          borderRadius: 2,
           bgcolor: 'background.paper',
         }}
       >
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 100 }}>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          alignItems={{ xs: 'stretch', md: 'center' }}
+        >
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ alignSelf: { xs: 'flex-start', md: 'center' }, minWidth: { xs: 'auto', md: 100 } }}
+          >
             <Filter size={18} color="#2563EB" />
             <Typography variant="subtitle2" fontWeight={700}>
               Filters:
@@ -282,7 +288,10 @@ export const DashboardPage: React.FC = () => {
           </Stack>
 
           {/* Department Filter */}
-          <FormControl size="small" sx={{ minWidth: 160, flex: 1 }}>
+          <FormControl
+            size="small"
+            sx={{ width: { xs: '100%', md: 'auto' }, minWidth: { xs: '100%', md: 160 }, flex: 1 }}
+          >
             <InputLabel id="dept-filter-label">Department</InputLabel>
             <Select
               labelId="dept-filter-label"
@@ -299,18 +308,11 @@ export const DashboardPage: React.FC = () => {
             </Select>
           </FormControl>
 
-          {/* Role Filter */}
-          <TextField
-            size="small"
-            label="Job Role / Title"
-            placeholder="e.g. Engineer, Designer"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            sx={{ minWidth: 160, flex: 1 }}
-          />
-
           {/* Location Filter */}
-          <FormControl size="small" sx={{ minWidth: 150, flex: 1 }}>
+          <FormControl
+            size="small"
+            sx={{ width: { xs: '100%', md: 'auto' }, minWidth: { xs: '100%', md: 150 }, flex: 1 }}
+          >
             <InputLabel id="location-filter-label">Location</InputLabel>
             <Select
               labelId="location-filter-label"
@@ -329,7 +331,10 @@ export const DashboardPage: React.FC = () => {
           </FormControl>
 
           {/* Status Filter */}
-          <FormControl size="small" sx={{ minWidth: 140, flex: 1 }}>
+          <FormControl
+            size="small"
+            sx={{ width: { xs: '100%', md: 'auto' }, minWidth: { xs: '100%', md: 140 }, flex: 1 }}
+          >
             <InputLabel id="status-filter-label">Status</InputLabel>
             <Select
               labelId="status-filter-label"
@@ -346,7 +351,10 @@ export const DashboardPage: React.FC = () => {
           </FormControl>
 
           {/* Date Range Filter */}
-          <FormControl size="small" sx={{ minWidth: 140, flex: 1 }}>
+          <FormControl
+            size="small"
+            sx={{ width: { xs: '100%', md: 'auto' }, minWidth: { xs: '100%', md: 140 }, flex: 1 }}
+          >
             <InputLabel id="daterange-filter-label">Date Range</InputLabel>
             <Select
               labelId="daterange-filter-label"
@@ -369,7 +377,7 @@ export const DashboardPage: React.FC = () => {
               size="small"
               startIcon={<RotateCcw size={16} />}
               onClick={handleClearFilters}
-              sx={{ whiteSpace: 'nowrap' }}
+              sx={{ width: { xs: '100%', md: 'auto' }, whiteSpace: 'nowrap' }}
             >
               Reset
             </Button>
