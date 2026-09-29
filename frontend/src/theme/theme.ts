@@ -68,6 +68,29 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => {
           },
         },
       },
+      MuiCssBaseline: {
+        styleOverrides: {
+          '*': {
+            scrollbarWidth: 'thin',
+            scrollbarColor: isLight ? '#CBD5E1 transparent' : '#475569 transparent',
+          },
+          '*::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+          },
+          '*::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '*::-webkit-scrollbar-thumb': {
+            backgroundColor: isLight ? '#CBD5E1' : '#334155',
+            borderRadius: '9999px',
+            border: isLight ? '2px solid #F8FAFC' : '2px solid #0B0F19',
+          },
+          '*::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: isLight ? '#94A3B8' : '#475569',
+          },
+        },
+      },
     },
   };
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
 import { RoleGuard } from './RoleGuard';
@@ -24,10 +24,18 @@ import { AccessDeniedState } from '../components/feedback/AccessDeniedState';
 import { NotFoundPage } from '../components/feedback/NotFoundPage';
 import { ServerErrorPage } from '../components/feedback/ServerErrorPage';
 import { LoginPage } from '../features/auth/LoginPage';
+import { UserRole } from '../config/routes.config';
 
 export const AppRoutes: React.FC = () => {
-  // Default role is 'Admin' for Day 1 & 2 baseline presentation
-  const currentRole = 'Admin';
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    const saved = localStorage.getItem('wfa_current_role');
+    return (saved as UserRole) || 'Admin';
+  });
+
+  const handleRoleChange = (role: UserRole) => {
+    setCurrentRole(role);
+    localStorage.setItem('wfa_current_role', role);
+  };
 
   return (
     <Routes>
@@ -36,7 +44,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/auth/callback" element={<Navigate to="/dashboard" replace />} />
 
       {/* Platform Enterprise Layout Routes */}
-      <Route element={<MainLayout currentRole={currentRole} />}>
+      <Route element={<MainLayout currentRole={currentRole} onRoleChange={handleRoleChange} />}>
         {/* Root Redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 

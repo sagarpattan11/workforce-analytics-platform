@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { UserRole } from '../config/routes.config';
+import { UserRole, hasRouteAccess } from '../config/routes.config';
 
 interface RoleGuardProps {
   allowedRoles?: UserRole[];
@@ -13,8 +13,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   currentRole = 'Admin',
   children,
 }) => {
-  // If allowedRoles specified and currentRole is not permitted, redirect to /403
-  if (allowedRoles && !allowedRoles.includes(currentRole)) {
+  if (!hasRouteAccess(allowedRoles, currentRole)) {
     return <Navigate to="/403" replace />;
   }
 

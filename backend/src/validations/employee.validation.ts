@@ -55,6 +55,7 @@ export const createEmployeeSchema = z.object({
     .string({ required_error: 'Hire date is required' })
     .or(z.date())
     .pipe(z.coerce.date()),
+  yearsOfExperience: z.coerce.number().min(0, 'Years of experience cannot be negative').optional(),
   salary: z.coerce.number().min(0, 'Salary cannot be negative').optional(),
   avatarUrl: z.string().trim().optional(),
 });
@@ -72,6 +73,7 @@ export const updateEmployeeSchema = z.object({
   status: z.enum(['Active', 'Inactive', 'On Leave', 'Terminated']).optional(),
   location: z.string().trim().min(2).optional(),
   hireDate: z.string().or(z.date()).pipe(z.coerce.date()).optional(),
+  yearsOfExperience: z.coerce.number().min(0, 'Years of experience cannot be negative').optional(),
   salary: z.coerce.number().min(0).optional(),
   avatarUrl: z.string().trim().optional(),
 });
@@ -96,6 +98,13 @@ export const employeeQuerySchema = z.object({
   location: z.string().optional(),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  isDeleted: z
+    .preprocess((val) => {
+      if (val === 'true' || val === true) return true;
+      if (val === 'false' || val === false) return false;
+      return undefined;
+    }, z.boolean().optional())
+    .optional(),
 });
 
 // Inferred TypeScript types

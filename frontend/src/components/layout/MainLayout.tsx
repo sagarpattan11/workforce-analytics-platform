@@ -7,9 +7,13 @@ import { UserRole } from '../../config/routes.config';
 
 interface MainLayoutProps {
   currentRole?: UserRole;
+  onRoleChange?: (role: UserRole) => void;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ currentRole = 'Admin' }) => {
+export const MainLayout: React.FC<MainLayoutProps> = ({
+  currentRole = 'Admin',
+  onRoleChange,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -61,7 +65,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ currentRole = 'Admin' })
         }}
       >
         {/* Sticky Header */}
-        <Header onToggleSidebar={handleToggleSidebar} />
+        <Header
+          onToggleSidebar={handleToggleSidebar}
+          currentRole={currentRole}
+          onRoleChange={onRoleChange}
+        />
 
         {/* Dynamic Route Content Area */}
         <Box

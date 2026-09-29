@@ -3,7 +3,6 @@ import { useLocation, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   IconButton,
-  InputBase,
   Badge,
   Avatar,
   Menu,
@@ -16,11 +15,9 @@ import {
   Link,
   useTheme,
   useMediaQuery,
-  Paper,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Search,
   Sun,
   Moon,
   Bell,
@@ -30,16 +27,21 @@ import {
   Shield,
 } from 'lucide-react';
 import { useAppTheme } from '../../theme/ThemeContext';
-import { APP_ROUTES } from '../../config/routes.config';
+import { APP_ROUTES, UserRole } from '../../config/routes.config';
 import { api } from '../../api/client';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
+  currentRole?: UserRole;
+  onRoleChange?: (role: UserRole) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onToggleSidebar,
+  currentRole = 'Admin',
+  onRoleChange,
+}) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
   const { resolvedMode, toggleTheme } = useAppTheme();
@@ -81,17 +83,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         alignItems: 'center',
         justifyContent: 'space-between',
         px: { xs: 2, md: 3 },
-        bgcolor: 'background.paper',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#172554' : '#1D4ED8'),
+        color: '#FFFFFF',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
         position: 'sticky',
         top: 0,
         zIndex: 1100,
         flexShrink: 0,
-        boxShadow: (theme) =>
-          theme.palette.mode === 'dark'
-            ? '0 2px 4px rgba(0,0,0,0.4)'
-            : '0 2px 4px rgba(0,0,0,0.03)',
+        boxShadow: '0 2px 8px rgba(15, 23, 42, 0.15)',
       }}
     >
       {/* 1. Left: Hamburger Toggle & Dynamic Breadcrumbs */}
@@ -101,13 +100,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           edge="start"
           aria-label="Toggle navigation menu"
           size="small"
+          sx={{ color: '#FFFFFF', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' } }}
         >
           <MenuIcon size={20} />
         </IconButton>
 
         {!isSmall && (
           <Breadcrumbs
-            separator={<ChevronRight size={14} color={theme.palette.text.secondary} />}
+            separator={<ChevronRight size={14} color="rgba(255, 255, 255, 0.7)" />}
             aria-label="breadcrumb"
             sx={{ '& .MuiBreadcrumbs-ol': { alignItems: 'center' } }}
           >
@@ -115,19 +115,23 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               component={RouterLink}
               to="/dashboard"
               underline="hover"
-              color="text.secondary"
-              sx={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}
+              sx={{
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                color: 'rgba(255, 255, 255, 0.85)',
+                '&:hover': { color: '#FFFFFF' },
+              }}
             >
               WFA
             </Link>
             {currentRoute?.group && (
-              <Typography color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+              <Typography sx={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.75)' }}>
                 {currentRoute.group}
               </Typography>
             )}
             <Typography
-              color="text.primary"
-              sx={{ fontSize: '0.85rem', fontWeight: 600 }}
+              sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#FFFFFF' }}
               aria-current="page"
             >
               {currentRoute?.breadcrumbLabel || currentRoute?.label || 'Overview'}
@@ -136,52 +140,38 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         )}
       </Box>
 
-      {/* 2. Middle: Global Search Placeholder (Desktop / Tablet) */}
-      {!isMobile && (
-        <Paper
-          component="form"
-          elevation={0}
-          onSubmit={(e) => e.preventDefault()}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            width: { md: 280, lg: 380 },
-            px: 1.5,
-            py: 0.5,
-            bgcolor: 'action.hover',
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Search size={16} color={theme.palette.text.secondary} />
-          <InputBase
-            placeholder="Search employees, skills, reports... (Ctrl+K)"
-            sx={{ ml: 1.5, flex: 1, fontSize: '0.85rem' }}
-            inputProps={{ 'aria-label': 'search workforce analytics' }}
-          />
-        </Paper>
-      )}
-
-      {/* 3. Right: Action Controls (Theme, Notifications, Profile) */}
+      {/* Right: Action Controls (Theme, Notifications, Profile) */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {/* Theme Toggle Button */}
         <Tooltip title={resolvedMode === 'dark' ? 'Switch to Light mode' : 'Switch to Dark mode'}>
-          <IconButton onClick={toggleTheme} size="small" aria-label="Toggle visual theme">
+          <IconButton
+            onClick={toggleTheme}
+            size="small"
+            aria-label="Toggle visual theme"
+            sx={{ color: '#FFFFFF', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' } }}
+          >
             {resolvedMode === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </IconButton>
         </Tooltip>
 
         {/* Notifications Button */}
         <Tooltip title="Notifications">
-          <IconButton size="small" aria-label="Show notifications">
-            <Badge badgeContent={3} color="primary" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem' } }}>
+          <IconButton
+            size="small"
+            aria-label="Show notifications"
+            sx={{ color: '#FFFFFF', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' } }}
+          >
+            <Badge badgeContent={3} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem' } }}>
               <Bell size={18} />
             </Badge>
           </IconButton>
         </Tooltip>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 24, alignSelf: 'center' }} />
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 0.5, height: 24, alignSelf: 'center', borderColor: 'rgba(255, 255, 255, 0.25)' }}
+        />
 
         {/* User Profile Avatar & Menu */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -191,14 +181,17 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             aria-controls={userMenuOpen ? 'user-profile-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={userMenuOpen ? 'true' : undefined}
+            sx={{ p: 0.5 }}
           >
             <Avatar
               sx={{
-                width: 32,
-                height: 32,
-                bgcolor: 'primary.main',
+                width: 34,
+                height: 34,
+                bgcolor: '#FFFFFF',
+                color: '#1D4ED8',
                 fontSize: '0.85rem',
-                fontWeight: 600,
+                fontWeight: 700,
+                border: '2px solid rgba(255, 255, 255, 0.4)',
               }}
             >
               SA
@@ -207,11 +200,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
           {!isSmall && (
             <Box sx={{ textAlign: 'left', cursor: 'pointer' }} onClick={handleOpenUserMenu}>
-              <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
+              <Typography variant="body2" fontWeight={600} lineHeight={1.2} sx={{ color: '#FFFFFF' }}>
                 Sagar
               </Typography>
-              <Typography variant="caption" color="text.secondary" lineHeight={1}>
-                Administrator
+              <Typography variant="caption" lineHeight={1} sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                {currentRole}
               </Typography>
             </Box>
           )}
@@ -227,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             PaperProps={{
               sx: {
-                width: 220,
+                width: 240,
                 mt: 1.5,
                 borderRadius: 2,
                 boxShadow: theme.shadows[3],
@@ -239,10 +232,50 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                 Sagar
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block">
-                sagar@workforce.internal
+                Current Role: <strong>{currentRole}</strong>
               </Typography>
             </Box>
             <Divider />
+
+            {/* RBAC Role Switcher */}
+            {onRoleChange && (
+              <>
+                <Box sx={{ px: 2, pt: 1, pb: 0.5 }}>
+                  <Typography variant="caption" fontWeight={700} color="primary.main">
+                    SWITCH ROLE (RBAC DEMO)
+                  </Typography>
+                </Box>
+                {(
+                  [
+                    'Admin',
+                    'HR Manager',
+                    'Executive',
+                    'Department Manager',
+                    'Team Lead',
+                    'Employee',
+                  ] as UserRole[]
+                ).map((r) => (
+                  <MenuItem
+                    key={r}
+                    selected={currentRole === r}
+                    onClick={() => {
+                      onRoleChange(r);
+                      handleCloseUserMenu();
+                    }}
+                    sx={{ py: 0.5, fontSize: '0.825rem' }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight={currentRole === r ? 700 : 400}
+                      color={currentRole === r ? 'primary.main' : 'text.primary'}
+                    >
+                      {r} {currentRole === r ? '✓' : ''}
+                    </Typography>
+                  </MenuItem>
+                ))}
+                <Divider />
+              </>
+            )}
 
             <MenuItem component={RouterLink} to="/profile">
               <ListItemIcon>

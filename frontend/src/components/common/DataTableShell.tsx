@@ -7,9 +7,13 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TablePagination,
   Skeleton,
   Box,
+  Typography,
+  Select,
+  MenuItem,
+  Stack,
+  Pagination,
 } from '@mui/material';
 import { EmptyState } from '../feedback/EmptyState';
 
@@ -18,7 +22,7 @@ export interface Column<T> {
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T, index: number) => React.ReactNode;
 }
 
 export interface DataTableShellProps<T> {
@@ -87,7 +91,7 @@ export function DataTableShell<T extends Record<string, unknown>>({
                     const value = row[column.id as string];
                     return (
                       <TableCell key={String(column.id)} align={column.align || 'left'}>
-                        {column.render ? column.render(row) : (value as React.ReactNode)}
+                        {column.render ? column.render(row, rowIndex) : (value as React.ReactNode)}
                       </TableCell>
                     );
                   })}
@@ -99,16 +103,86 @@ export function DataTableShell<T extends Record<string, unknown>>({
       </TableContainer>
 
       {totalCount > 0 && onPageChange && (
-        <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 50]}
-            component="div"
-            count={totalCount}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(_, newPage) => onPageChange(newPage)}
-            onRowsPerPageChange={(e) => onRowsPerPageChange && onRowsPerPageChange(parseInt(e.target.value, 10))}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: { xs: 2, sm: 2.5 },
+            py: 1.5,
+            gap: { xs: 1.5, md: 2 },
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          {/* 1. LEFT: Showing X to Y of Total Count */}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontSize: '0.8125rem', fontWeight: 500 }}
+          >
+            Showing{' '}
+            <Box component="span" fontWeight={700} color="text.primary">
+              {totalCount === 0 ? 0 : page * rowsPerPage + 1}
+            </Box>
+            {' – '}
+            <Box component="span" fontWeight={700} color="text.primary">
+              {Math.min((page + 1) * rowsPerPage, totalCount)}
+            </Box>
+            {' of '}
+            <Box component="span" fontWeight={700} color="text.primary">
+              {totalCount}
+            </Box>
+            {' records'}
+          </Typography>
+
+          {/* 2. MIDDLE: Interactive Page Move Buttons & Arrows */}
+          <Pagination
+            count={Math.max(1, Math.ceil(totalCount / Math.max(1, rowsPerPage)))}
+            page={page + 1}
+            onChange={(_, newPage) => onPageChange(newPage - 1)}
+            color="primary"
+            shape="rounded"
+            size="small"
+            showFirstButton
+            showLastButton
+            sx={{
+              '& .MuiPaginationItem-root': {
+                fontWeight: 600,
+                fontSize: '0.8125rem',
+                borderRadius: 1.5,
+              },
+            }}
           />
+
+          {/* 3. RIGHT: Rows Per Page Selector */}
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
+              Rows per page:
+            </Typography>
+            <Select
+              size="small"
+              value={rowsPerPage}
+              onChange={(e) =>
+                onRowsPerPageChange && onRowsPerPageChange(parseInt(e.target.value as string, 10))
+              }
+              sx={{
+                height: 32,
+                fontSize: '0.8125rem',
+                borderRadius: 1.5,
+                bgcolor: 'action.hover',
+                '& .MuiSelect-select': { py: 0.5, px: 1.5 },
+              }}
+            >
+              {[10, 25, 50, 100].map((option) => (
+                <MenuItem key={option} value={option} sx={{ fontSize: '0.8125rem' }}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </Stack>
         </Box>
       )}
     </Paper>

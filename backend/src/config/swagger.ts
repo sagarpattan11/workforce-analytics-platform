@@ -24,6 +24,9 @@ export const swaggerDocument = {
     { name: 'Departments', description: 'Department management and headcount hierarchy' },
     { name: 'Teams', description: 'Team management within departments' },
     { name: 'Analytics', description: 'Real-time MongoDB workforce analytics, KPIs, and chart data' },
+    { name: 'Skills', description: 'Skill catalog, competency benchmarks, and gap analytics' },
+    { name: 'Roles', description: 'Enterprise job roles and permissions hierarchy' },
+    { name: 'Locations', description: 'Workplace sites and remote hubs' },
     { name: 'Admin', description: 'Admin role oversight and user management' },
     { name: 'System', description: 'System health and monitoring endpoints' },
   ],
@@ -585,6 +588,117 @@ export const swaggerDocument = {
         responses: {
           '200': { description: 'User roles updated' },
           '403': { description: 'Forbidden' },
+        },
+      },
+    },
+
+    // -------------------------------------------------------------
+    // ROLES APIS
+    // -------------------------------------------------------------
+    '/roles': {
+      get: {
+        tags: ['Roles'],
+        summary: 'List Enterprise Roles',
+        description: 'Retrieves all defined enterprise job roles with permission structures.',
+        responses: {
+          '200': { description: 'Roles list retrieved' },
+        },
+      },
+      post: {
+        tags: ['Roles'],
+        summary: 'Create Enterprise Role',
+        description: 'Registers a new enterprise role.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'code', 'departmentId'],
+                properties: {
+                  name: { type: 'string', example: 'Lead Cloud Architect' },
+                  code: { type: 'string', example: 'ENG-CLOUD' },
+                  departmentId: { type: 'string', example: '6ab21acf49522d27fe96275a' },
+                  level: { type: 'string', enum: ['Junior', 'Mid', 'Senior', 'Lead', 'Executive'] },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Role created' },
+        },
+      },
+    },
+
+    // -------------------------------------------------------------
+    // LOCATIONS APIS
+    // -------------------------------------------------------------
+    '/locations': {
+      get: {
+        tags: ['Locations'],
+        summary: 'List Workplace Locations',
+        description: 'Retrieves all physical office facilities and remote hubs.',
+        responses: {
+          '200': { description: 'Locations list retrieved' },
+        },
+      },
+      post: {
+        tags: ['Locations'],
+        summary: 'Create Location',
+        description: 'Registers a new workplace site.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'code', 'city', 'country'],
+                properties: {
+                  name: { type: 'string', example: 'Austin Engineering Hub' },
+                  code: { type: 'string', example: 'ATX-HUB' },
+                  city: { type: 'string', example: 'Austin' },
+                  country: { type: 'string', example: 'United States' },
+                  type: { type: 'string', enum: ['Office', 'Work From Home', 'Hybrid'] },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Location created' },
+        },
+      },
+    },
+
+    // -------------------------------------------------------------
+    // SKILLS & SKILL ANALYTICS APIS
+    // -------------------------------------------------------------
+    '/skills': {
+      get: {
+        tags: ['Skills'],
+        summary: 'List Skills Registry',
+        description: 'Retrieves all organizational skills and benchmark demand.',
+        responses: {
+          '200': { description: 'Skills retrieved' },
+        },
+      },
+    },
+    '/skills/analytics': {
+      get: {
+        tags: ['Skills'],
+        summary: 'Skill Analytics Aggregation',
+        description: 'Returns data for the 7 Skill Analytics panels: distribution, required vs available, gaps, coverage, top/missing skills, certifications, and training recommendations.',
+        parameters: [
+          {
+            name: 'departmentId',
+            in: 'query',
+            description: 'Optional department ObjectId filter',
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Skill analytics payload' },
         },
       },
     },
