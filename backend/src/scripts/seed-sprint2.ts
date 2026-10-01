@@ -438,7 +438,7 @@ const seedSprint2 = async () => {
         salary: {
           baseSalary: c.salary,
           bonus: c.bonus,
-          currency: 'USD',
+          currency: 'INR',
         },
         stage: c.stage,
         status: c.status,

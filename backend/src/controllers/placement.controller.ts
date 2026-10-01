@@ -341,7 +341,7 @@ export const getPlacementAnalytics = async (req: Request, res: Response): Promis
             maxSalary,
             avgSalary,
             medianSalary,
-            currency: 'USD',
+            currency: 'INR',
           },
         },
         funnel: placementFunnel,

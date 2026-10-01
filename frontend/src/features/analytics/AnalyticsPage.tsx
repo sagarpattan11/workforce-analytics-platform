@@ -40,6 +40,7 @@ import {
   TrendingDown,
   TrendingUp,
   Briefcase,
+  UserCheck,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -59,6 +60,8 @@ import { SkeletonLoader } from '../../components/common/SkeletonLoader';
 import { api } from '../../api/client';
 import { placementService, PlacementAnalyticsData } from '../../services/placement.service';
 import { PlacementAnalyticsView } from './components/PlacementAnalyticsView';
+import { recruitmentService, RecruitmentAnalyticsData } from '../../services/recruitment.service';
+import { RecruitmentAnalyticsView } from './components/RecruitmentAnalyticsView';
 
 const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
 
@@ -121,7 +124,7 @@ interface DepartmentOption {
 }
 
 export const AnalyticsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'skills' | 'placement'>('skills');
+  const [activeTab, setActiveTab] = useState<'skills' | 'placement' | 'recruitment'>('skills');
   const [data, setData] = useState<SkillAnalyticsData | null>(null);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
   const [selectedDept, setSelectedDept] = useState('');
@@ -132,6 +135,11 @@ export const AnalyticsPage: React.FC = () => {
   const [placementData, setPlacementData] = useState<PlacementAnalyticsData | null>(null);
   const [placementLoading, setPlacementLoading] = useState(false);
   const [placementError, setPlacementError] = useState<string | null>(null);
+
+  // Recruitment Analytics State
+  const [recruitmentData, setRecruitmentData] = useState<RecruitmentAnalyticsData | null>(null);
+  const [recruitmentLoading, setRecruitmentLoading] = useState(false);
+  const [recruitmentError, setRecruitmentError] = useState<string | null>(null);
 
   // Enroll Team Dialog & Feedback State
   const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
@@ -214,13 +222,33 @@ export const AnalyticsPage: React.FC = () => {
     }
   }, [selectedDept]);
 
+  const fetchRecruitmentAnalytics = useCallback(async () => {
+    setRecruitmentLoading(true);
+    setRecruitmentError(null);
+    try {
+      const res = await recruitmentService.getRecruitmentAnalytics({
+        departmentId: selectedDept || undefined,
+      });
+      setRecruitmentData(res.data);
+    } catch (err: any) {
+      console.error('Failed to load recruitment analytics:', err);
+      setRecruitmentError(
+        err.response?.data?.message || 'Unable to connect to recruitment analytics service.'
+      );
+    } finally {
+      setRecruitmentLoading(false);
+    }
+  }, [selectedDept]);
+
   useEffect(() => {
     if (activeTab === 'skills') {
       fetchAnalytics();
-    } else {
+    } else if (activeTab === 'placement') {
       fetchPlacementAnalytics();
+    } else if (activeTab === 'recruitment') {
+      fetchRecruitmentAnalytics();
     }
-  }, [activeTab, fetchAnalytics, fetchPlacementAnalytics]);
+  }, [activeTab, fetchAnalytics, fetchPlacementAnalytics, fetchRecruitmentAnalytics]);
 
   const getPriorityChip = (status: 'Optimal' | 'Moderate' | 'Critical') => {
     switch (status) {
@@ -235,11 +263,19 @@ export const AnalyticsPage: React.FC = () => {
 
   return (
     <PageShell
-      title={activeTab === 'skills' ? 'Skill & Competency Analytics' : 'Placement Analytics & Funnel'}
+      title={
+        activeTab === 'skills'
+          ? 'Skill & Competency Analytics'
+          : activeTab === 'placement'
+          ? 'Placement Analytics & Funnel'
+          : 'Recruitment & Talent Acquisition Analytics'
+      }
       description={
         activeTab === 'skills'
           ? 'Workforce skill distribution, capability gap analysis, and tailored training recommendations.'
-          : 'Candidate placement lifecycle, conversion funnel, employer benchmarks, and compensation insights.'
+          : activeTab === 'placement'
+          ? 'Candidate placement lifecycle, conversion funnel, employer benchmarks, and compensation insights.'
+          : 'Requisition fulfillment, candidate hiring funnel, sourcing channel ROI, and time-to-hire benchmarks.'
       }
       disablePaper
       actions={
@@ -264,14 +300,26 @@ export const AnalyticsPage: React.FC = () => {
             variant="outlined"
             size="small"
             startIcon={
-              (activeTab === 'skills' ? loading : placementLoading) ? (
+              (activeTab === 'skills' ? loading : activeTab === 'placement' ? placementLoading : recruitmentLoading) ? (
                 <CircularProgress size={16} />
               ) : (
                 <RefreshCw size={16} />
               )
             }
-            onClick={activeTab === 'skills' ? fetchAnalytics : fetchPlacementAnalytics}
-            disabled={activeTab === 'skills' ? loading : placementLoading}
+            onClick={
+              activeTab === 'skills'
+                ? fetchAnalytics
+                : activeTab === 'placement'
+                ? fetchPlacementAnalytics
+                : fetchRecruitmentAnalytics
+            }
+            disabled={
+              activeTab === 'skills'
+                ? loading
+                : activeTab === 'placement'
+                ? placementLoading
+                : recruitmentLoading
+            }
           >
             Refresh
           </Button>
@@ -279,33 +327,49 @@ export const AnalyticsPage: React.FC = () => {
       }
     >
       {/* ------------------------------------------------------------- */}
-      {/* SUB-MODULE TABS NAVIGATION */}
+      {/* SUB-MODULE TABS NAVIGATION (RESPONSIVE SCROLLABLE ON MOBILE) */}
       {/* ------------------------------------------------------------- */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs
           value={activeTab}
           onChange={(_, val) => setActiveTab(val)}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           textColor="primary"
           indicatorColor="primary"
+          sx={{
+            minHeight: 48,
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': { opacity: 0.3 },
+            },
+          }}
         >
           <Tab
             value="skills"
             icon={<Award size={18} />}
             iconPosition="start"
             label="Skill & Workforce Analytics"
-            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48 }}
+            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48, whiteSpace: 'nowrap' }}
           />
           <Tab
             value="placement"
             icon={<Briefcase size={18} />}
             iconPosition="start"
             label="Placement Analytics"
-            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48 }}
+            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48, whiteSpace: 'nowrap' }}
+          />
+          <Tab
+            value="recruitment"
+            icon={<UserCheck size={18} />}
+            iconPosition="start"
+            label="Recruitment Analytics"
+            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48, whiteSpace: 'nowrap' }}
           />
         </Tabs>
       </Box>
 
-      {(activeTab === 'skills' ? error : placementError) && (
+      {(activeTab === 'skills' ? error : activeTab === 'placement' ? placementError : recruitmentError) && (
         <Alert
           severity="error"
           sx={{ mb: 3 }}
@@ -313,13 +377,19 @@ export const AnalyticsPage: React.FC = () => {
             <Button
               color="inherit"
               size="small"
-              onClick={activeTab === 'skills' ? fetchAnalytics : fetchPlacementAnalytics}
+              onClick={
+                activeTab === 'skills'
+                  ? fetchAnalytics
+                  : activeTab === 'placement'
+                  ? fetchPlacementAnalytics
+                  : fetchRecruitmentAnalytics
+              }
             >
               Retry
             </Button>
           }
         >
-          {activeTab === 'skills' ? error : placementError}
+          {activeTab === 'skills' ? error : activeTab === 'placement' ? placementError : recruitmentError}
         </Alert>
       )}
 
@@ -777,8 +847,10 @@ export const AnalyticsPage: React.FC = () => {
           </Card>
         </Box>
       ) : null
-    ) : (
+    ) : activeTab === 'placement' ? (
       <PlacementAnalyticsView data={placementData} loading={placementLoading} />
+    ) : (
+      <RecruitmentAnalyticsView data={recruitmentData} loading={recruitmentLoading} />
     )}
 
       {/* ------------------------------------------------------------- */}

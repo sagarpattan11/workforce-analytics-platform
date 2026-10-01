@@ -127,7 +127,7 @@ const placementSchema = new Schema<IPlacement>(
       },
       currency: {
         type: String,
-        default: 'USD',
+        default: 'INR',
         uppercase: true,
       },
     },

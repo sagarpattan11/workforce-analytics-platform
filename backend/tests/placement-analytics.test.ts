@@ -48,7 +48,7 @@ describe('Placement Analytics API Integration Tests', () => {
     expect(salaryAnalysis.maxSalary).toBeGreaterThanOrEqual(salaryAnalysis.minSalary);
     expect(salaryAnalysis.avgSalary).toBeGreaterThan(0);
     expect(salaryAnalysis.medianSalary).toBeGreaterThan(0);
-    expect(salaryAnalysis.currency).toBe('USD');
+    expect(salaryAnalysis.currency).toBe('INR');
   });
 
   it('2. Returns 5-stage Placement Funnel and breakdowns', async () => {

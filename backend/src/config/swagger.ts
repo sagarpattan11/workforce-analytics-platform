@@ -562,6 +562,25 @@ export const swaggerDocument = {
         },
       },
     },
+    '/analytics/recruitment': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Recruitment Analytics (KPIs, Funnel, Channel Efficiency & Requisitions)',
+        description: 'Aggregates open positions, applications, shortlisted candidates, interviews, offers, hires, time to hire, cost per hire, offer acceptance rate, 5-stage funnel, and sourcing channel efficiency.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'departmentId', in: 'query', schema: { type: 'string' }, description: 'Filter by Department ObjectId' },
+          { name: 'location', in: 'query', schema: { type: 'string' }, description: 'Filter by Location (e.g. San Francisco, London)' },
+          { name: 'priority', in: 'query', schema: { type: 'string', enum: ['Low', 'Medium', 'High', 'Critical'] }, description: 'Filter by Requisition Priority' },
+          { name: 'channel', in: 'query', schema: { type: 'string', enum: ['LinkedIn', 'Referral', 'Career Portal', 'Campus', 'Agency', 'Direct'] }, description: 'Filter by Sourcing Channel' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['Open', 'Interviewing', 'Offer Sent', 'Closed', 'Cancelled'] }, description: 'Filter by Requisition Status' },
+        ],
+        responses: {
+          '200': { description: 'Recruitment analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
 
     // -------------------------------------------------------------
     // ADMIN ENDPOINTS

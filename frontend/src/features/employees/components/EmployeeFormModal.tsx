@@ -544,16 +544,16 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
           {/* Annual Salary */}
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Annual Salary ($ USD)"
+              label="Annual Salary (₹ INR)"
               type="number"
               size="small"
               fullWidth
               disabled={submitting}
-              placeholder="e.g. 135000"
+              placeholder="e.g. 1350000"
               value={formData.salary}
               onChange={(e) => setFormData((prev) => ({ ...prev, salary: e.target.value }))}
               error={Boolean(fieldErrors.salary)}
-              helperText={fieldErrors.salary || 'Base compensation in USD (optional)'}
+              helperText={fieldErrors.salary || 'Base compensation in INR (optional)'}
             />
           </Grid>
         </Grid>

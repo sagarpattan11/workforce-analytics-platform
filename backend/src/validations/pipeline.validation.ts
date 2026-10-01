@@ -17,7 +17,7 @@ export const placementIngestSchema = z.object({
     .object({
       baseSalary: z.number().nonnegative(),
       bonus: z.number().nonnegative().default(0),
-      currency: z.string().default('USD'),
+      currency: z.string().default('INR'),
     })
     .optional(),
   stage: z.enum(['Applied', 'Screened', 'Interviewed', 'Offered', 'Placed', 'Withdrawn', 'Rejected']).default('Applied'),

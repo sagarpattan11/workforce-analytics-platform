@@ -14,6 +14,7 @@ import {
   TableHead,
   TableRow,
   useTheme,
+  useMediaQuery,
   Alert,
 } from '@mui/material';
 import {
@@ -21,7 +22,7 @@ import {
   CheckCircle2,
   TrendingUp,
   Clock,
-  DollarSign,
+  IndianRupee,
   Building2,
   Sparkles,
   MapPin,
@@ -52,6 +53,7 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
   loading,
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (loading && !data) {
     return (
@@ -71,11 +73,11 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
 
   const { kpis, funnel, breakdowns, recentCandidates } = data;
 
-  // Format currency helpers
+  // Format currency helpers (INR / ₹)
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 0,
     }).format(val);
   };
@@ -118,7 +120,7 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
       title: 'Avg. Base Salary',
       value: formatCurrency(kpis.salaryAnalysis.avgSalary),
       subtext: `Median: ${formatCurrency(kpis.salaryAnalysis.medianSalary)}`,
-      icon: <DollarSign size={22} color="#059669" />,
+      icon: <IndianRupee size={22} color="#059669" />,
       color: '#059669',
       bgColor: 'rgba(5, 150, 105, 0.08)',
     },
@@ -127,13 +129,13 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* 1. TOP KPI METRICS ROW */}
-      <Grid container spacing={2.5}>
+      <Grid container spacing={2}>
         {kpiCards.map((card, idx) => (
-          <Grid item xs={12} sm={6} md={2.4} key={idx}>
+          <Grid item xs={6} sm={4} md={2.4} key={idx}>
             <Card
               elevation={0}
               sx={{
-                p: 2.5,
+                p: { xs: 1.5, sm: 2.2 },
                 height: '100%',
                 borderRadius: 2.5,
                 border: '1px solid',
@@ -146,13 +148,13 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
                 },
               }}
             >
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
-                <Typography variant="caption" fontWeight={600} color="text.secondary" textTransform="uppercase">
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                <Typography variant="caption" fontWeight={600} color="text.secondary" textTransform="uppercase" noWrap>
                   {card.title}
                 </Typography>
                 <Box
                   sx={{
-                    p: 1,
+                    p: { xs: 0.5, sm: 0.8 },
                     borderRadius: 2,
                     bgcolor: card.bgColor,
                     display: 'flex',
@@ -160,13 +162,13 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
                     justifyContent: 'center',
                   }}
                 >
-                  {card.icon}
+                  {React.cloneElement(card.icon as React.ReactElement, { size: isMobile ? 18 : 22 })}
                 </Box>
               </Stack>
-              <Typography variant="h4" fontWeight={700} color="text.primary" lineHeight={1.2}>
+              <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} color="text.primary" lineHeight={1.2}>
                 {card.value}
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block', fontSize: { xs: '0.68rem', sm: '0.75rem' } }} noWrap>
                 {card.subtext}
               </Typography>
             </Card>
@@ -213,15 +215,15 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
                 <BarChart
                   data={funnel}
                   layout="vertical"
-                  margin={{ top: 10, right: 30, left: 40, bottom: 5 }}
+                  margin={{ top: 10, right: isMobile ? 15 : 30, left: isMobile ? -10 : 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
                   <XAxis type="number" allowDecimals={false} />
                   <YAxis
                     dataKey="label"
                     type="category"
-                    tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
-                    width={140}
+                    tick={{ fontSize: isMobile ? 10 : 12, fill: theme.palette.text.secondary }}
+                    width={isMobile ? 105 : 140}
                   />
                   <Tooltip
                     formatter={(value: any) => {
@@ -246,16 +248,18 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
             </Box>
 
             {/* Quick in-progress pipeline summary pills */}
-            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} mt={2} pt={2} borderTop="1px solid" borderColor="divider">
-              <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ alignSelf: 'center' }}>
+            <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                 Active in Pipeline:
               </Typography>
-              <Chip label={`In Review: ${data.stageBreakdown.applied}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover' }} />
-              <Chip label={`In Screening: ${data.stageBreakdown.screened}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover' }} />
-              <Chip label={`In Interviews: ${data.stageBreakdown.interviewed}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover' }} />
-              <Chip label={`Offers Pending: ${data.stageBreakdown.offered}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover' }} />
-              <Chip label={`Placed: ${data.stageBreakdown.placed}`} size="small" color="success" variant="outlined" sx={{ fontWeight: 600 }} />
-            </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} alignItems="center">
+                <Chip label={`In Review: ${data.stageBreakdown.applied}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover', fontWeight: 500 }} />
+                <Chip label={`In Screening: ${data.stageBreakdown.screened}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover', fontWeight: 500 }} />
+                <Chip label={`In Interviews: ${data.stageBreakdown.interviewed}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover', fontWeight: 500 }} />
+                <Chip label={`Offers Pending: ${data.stageBreakdown.offered}`} size="small" variant="filled" sx={{ bgcolor: 'action.hover', fontWeight: 500 }} />
+                <Chip label={`Placed: ${data.stageBreakdown.placed}`} size="small" color="success" variant="outlined" sx={{ fontWeight: 700 }} />
+              </Stack>
+            </Box>
           </Card>
         </Grid>
 
@@ -332,7 +336,7 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
                     tick={{ fontSize: 11, fill: theme.palette.text.secondary }}
                   />
                   <YAxis
-                    tickFormatter={(val) => `$${val / 1000}k`}
+                    tickFormatter={(val) => `₹${val / 1000}k`}
                     tick={{ fontSize: 11, fill: theme.palette.text.secondary }}
                   />
                   <Tooltip
@@ -454,8 +458,8 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
           </Stack>
         </Box>
 
-        <TableContainer>
-          <Table size="small">
+        <TableContainer sx={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <Table size="small" sx={{ minWidth: 680 }}>
             <TableHead sx={{ bgcolor: 'action.hover' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Candidate</TableCell>

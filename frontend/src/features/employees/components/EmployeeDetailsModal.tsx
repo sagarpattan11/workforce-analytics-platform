@@ -17,7 +17,7 @@ import {
   Briefcase,
   MapPin,
   Calendar,
-  DollarSign,
+  IndianRupee,
   Clock,
   Award,
 } from 'lucide-react';
@@ -80,7 +80,7 @@ export const EmployeeDetailsModal: React.FC<EmployeeDetailsModalProps> = ({
     : 'N/A';
 
   const formattedSalary = employee.salary
-    ? `$${employee.salary.toLocaleString()} / year`
+    ? `₹${employee.salary.toLocaleString('en-IN')} / year`
     : 'Not disclosed';
 
   return (
@@ -253,7 +253,7 @@ export const EmployeeDetailsModal: React.FC<EmployeeDetailsModalProps> = ({
           {/* Salary */}
           <Grid item xs={12} sm={6}>
             <Stack direction="row" spacing={1.5} alignItems="center">
-              <DollarSign size={18} color="#64748B" />
+              <IndianRupee size={18} color="#64748B" />
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">
                   Compensation
