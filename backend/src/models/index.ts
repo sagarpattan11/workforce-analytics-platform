@@ -13,3 +13,4 @@ export * from './performance.model';
 export * from './training.model';
 export * from './recruitment.model';
 export * from './placement.model';
+export * from './learning-record.model';

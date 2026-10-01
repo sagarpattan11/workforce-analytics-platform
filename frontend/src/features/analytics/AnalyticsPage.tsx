@@ -26,6 +26,8 @@ import {
   DialogContent,
   DialogActions,
   Snackbar,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Award,
@@ -37,6 +39,7 @@ import {
   BookOpen,
   TrendingDown,
   TrendingUp,
+  Briefcase,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -54,6 +57,8 @@ import {
 import { PageShell } from '../../components/layout/PageShell';
 import { SkeletonLoader } from '../../components/common/SkeletonLoader';
 import { api } from '../../api/client';
+import { placementService, PlacementAnalyticsData } from '../../services/placement.service';
+import { PlacementAnalyticsView } from './components/PlacementAnalyticsView';
 
 const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
 
@@ -116,11 +121,17 @@ interface DepartmentOption {
 }
 
 export const AnalyticsPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'skills' | 'placement'>('skills');
   const [data, setData] = useState<SkillAnalyticsData | null>(null);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
   const [selectedDept, setSelectedDept] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Placement Analytics State
+  const [placementData, setPlacementData] = useState<PlacementAnalyticsData | null>(null);
+  const [placementLoading, setPlacementLoading] = useState(false);
+  const [placementError, setPlacementError] = useState<string | null>(null);
 
   // Enroll Team Dialog & Feedback State
   const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
@@ -185,9 +196,31 @@ export const AnalyticsPage: React.FC = () => {
     }
   }, [selectedDept]);
 
+  const fetchPlacementAnalytics = useCallback(async () => {
+    setPlacementLoading(true);
+    setPlacementError(null);
+    try {
+      const res = await placementService.getPlacementAnalytics({
+        departmentId: selectedDept || undefined,
+      });
+      setPlacementData(res.data);
+    } catch (err: any) {
+      console.error('Failed to load placement analytics:', err);
+      setPlacementError(
+        err.response?.data?.message || 'Unable to connect to placement analytics service.'
+      );
+    } finally {
+      setPlacementLoading(false);
+    }
+  }, [selectedDept]);
+
   useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+    if (activeTab === 'skills') {
+      fetchAnalytics();
+    } else {
+      fetchPlacementAnalytics();
+    }
+  }, [activeTab, fetchAnalytics, fetchPlacementAnalytics]);
 
   const getPriorityChip = (status: 'Optimal' | 'Moderate' | 'Critical') => {
     switch (status) {
@@ -202,8 +235,12 @@ export const AnalyticsPage: React.FC = () => {
 
   return (
     <PageShell
-      title="Skill & Competency Analytics"
-      description="Workforce skill distribution, capability gap analysis, and tailored training recommendations."
+      title={activeTab === 'skills' ? 'Skill & Competency Analytics' : 'Placement Analytics & Funnel'}
+      description={
+        activeTab === 'skills'
+          ? 'Workforce skill distribution, capability gap analysis, and tailored training recommendations.'
+          : 'Candidate placement lifecycle, conversion funnel, employer benchmarks, and compensation insights.'
+      }
       disablePaper
       actions={
         <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
@@ -226,25 +263,71 @@ export const AnalyticsPage: React.FC = () => {
           <Button
             variant="outlined"
             size="small"
-            startIcon={loading ? <CircularProgress size={16} /> : <RefreshCw size={16} />}
-            onClick={fetchAnalytics}
-            disabled={loading}
+            startIcon={
+              (activeTab === 'skills' ? loading : placementLoading) ? (
+                <CircularProgress size={16} />
+              ) : (
+                <RefreshCw size={16} />
+              )
+            }
+            onClick={activeTab === 'skills' ? fetchAnalytics : fetchPlacementAnalytics}
+            disabled={activeTab === 'skills' ? loading : placementLoading}
           >
             Refresh
           </Button>
         </Stack>
       }
     >
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} action={<Button color="inherit" size="small" onClick={fetchAnalytics}>Retry</Button>}>
-          {error}
+      {/* ------------------------------------------------------------- */}
+      {/* SUB-MODULE TABS NAVIGATION */}
+      {/* ------------------------------------------------------------- */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, val) => setActiveTab(val)}
+          textColor="primary"
+          indicatorColor="primary"
+        >
+          <Tab
+            value="skills"
+            icon={<Award size={18} />}
+            iconPosition="start"
+            label="Skill & Workforce Analytics"
+            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48 }}
+          />
+          <Tab
+            value="placement"
+            icon={<Briefcase size={18} />}
+            iconPosition="start"
+            label="Placement Analytics"
+            sx={{ fontWeight: 600, textTransform: 'none', minHeight: 48 }}
+          />
+        </Tabs>
+      </Box>
+
+      {(activeTab === 'skills' ? error : placementError) && (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={activeTab === 'skills' ? fetchAnalytics : fetchPlacementAnalytics}
+            >
+              Retry
+            </Button>
+          }
+        >
+          {activeTab === 'skills' ? error : placementError}
         </Alert>
       )}
 
-      {loading && !data ? (
-        <SkeletonLoader type="card" count={8} />
-      ) : data ? (
-        <Box>
+      {activeTab === 'skills' ? (
+        loading && !data ? (
+          <SkeletonLoader type="card" count={8} />
+        ) : data ? (
+          <Box>
           {/* ------------------------------------------------------------- */}
           {/* SUMMARY KPI METRIC CARDS */}
           {/* ------------------------------------------------------------- */}
@@ -693,7 +776,10 @@ export const AnalyticsPage: React.FC = () => {
             </Grid>
           </Card>
         </Box>
-      ) : null}
+      ) : null
+    ) : (
+      <PlacementAnalyticsView data={placementData} loading={placementLoading} />
+    )}
 
       {/* ------------------------------------------------------------- */}
       {/* ENROLL TEAM CONFIRMATION DIALOG */}

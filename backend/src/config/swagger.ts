@@ -542,6 +542,26 @@ export const swaggerDocument = {
         },
       },
     },
+    '/analytics/placement': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Placement Analytics (5 KPIs, Funnel, Salary Analysis & Breakdowns)',
+        description: 'Aggregates candidate placement data, conversion funnel, salary analysis (min, max, median, average), and breakdowns by department, employer, skill, and location.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Filter by Department Name or Code' },
+          { name: 'location', in: 'query', schema: { type: 'string' }, description: 'Filter by Location (e.g. San Francisco)' },
+          { name: 'employer', in: 'query', schema: { type: 'string' }, description: 'Filter by Employer Name' },
+          { name: 'role', in: 'query', schema: { type: 'string' }, description: 'Filter by Role / Title' },
+          { name: 'skill', in: 'query', schema: { type: 'string' }, description: 'Filter by Skill' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['In Progress', 'Placed', 'Failed'] }, description: 'Filter by Status' },
+        ],
+        responses: {
+          '200': { description: 'Placement analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
 
     // -------------------------------------------------------------
     // ADMIN ENDPOINTS
@@ -600,14 +620,17 @@ export const swaggerDocument = {
         tags: ['Roles'],
         summary: 'List Enterprise Roles',
         description: 'Retrieves all defined enterprise job roles with permission structures.',
+        security: [{ bearerAuth: [] }],
         responses: {
           '200': { description: 'Roles list retrieved' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
       post: {
         tags: ['Roles'],
         summary: 'Create Enterprise Role',
         description: 'Registers a new enterprise role.',
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -627,6 +650,7 @@ export const swaggerDocument = {
         },
         responses: {
           '201': { description: 'Role created' },
+          '401': { description: 'Unauthorized' },
         },
       },
     },
@@ -639,14 +663,17 @@ export const swaggerDocument = {
         tags: ['Locations'],
         summary: 'List Workplace Locations',
         description: 'Retrieves all physical office facilities and remote hubs.',
+        security: [{ bearerAuth: [] }],
         responses: {
           '200': { description: 'Locations list retrieved' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
       post: {
         tags: ['Locations'],
         summary: 'Create Location',
         description: 'Registers a new workplace site.',
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -667,6 +694,7 @@ export const swaggerDocument = {
         },
         responses: {
           '201': { description: 'Location created' },
+          '401': { description: 'Unauthorized' },
         },
       },
     },
@@ -679,8 +707,10 @@ export const swaggerDocument = {
         tags: ['Skills'],
         summary: 'List Skills Registry',
         description: 'Retrieves all organizational skills and benchmark demand.',
+        security: [{ bearerAuth: [] }],
         responses: {
           '200': { description: 'Skills retrieved' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
     },
@@ -689,6 +719,7 @@ export const swaggerDocument = {
         tags: ['Skills'],
         summary: 'Skill Analytics Aggregation',
         description: 'Returns data for the 7 Skill Analytics panels: distribution, required vs available, gaps, coverage, top/missing skills, certifications, and training recommendations.',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'departmentId',
@@ -699,6 +730,7 @@ export const swaggerDocument = {
         ],
         responses: {
           '200': { description: 'Skill analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
     },

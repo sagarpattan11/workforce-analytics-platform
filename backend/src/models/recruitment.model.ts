@@ -2,6 +2,7 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export type RequisitionStatus = 'Open' | 'Interviewing' | 'Offer Sent' | 'Closed' | 'Cancelled';
 export type RequisitionPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type SourcingChannel = 'LinkedIn' | 'Referral' | 'Career Portal' | 'Campus' | 'Agency' | 'Direct';
 
 export interface IRecruitment extends Document {
   requisitionNumber: string;
@@ -12,6 +13,16 @@ export interface IRecruitment extends Document {
   location: string;
   openPositions: number;
   filledPositions: number;
+  applicationsCount: number;
+  shortlistedCount: number;
+  interviewedCount: number;
+  offersCount: number;
+  hiresCount: number; // matches filledPositions
+  timeToHireDays: number;
+  costPerHire: number;
+  offerAcceptanceRate: number; // Percentage (e.g. 85.5)
+  sourcingChannel: SourcingChannel;
+  skillsRequired: string[];
   targetHireDate?: Date;
   priority: RequisitionPriority;
   status: RequisitionStatus;
@@ -35,6 +46,7 @@ const recruitmentSchema = new Schema<IRecruitment>(
       required: [true, 'Requisition job title is required'],
       trim: true,
       maxlength: [100, 'Title cannot exceed 100 characters'],
+      index: true,
     },
     departmentId: {
       type: Schema.Types.ObjectId,
@@ -54,6 +66,7 @@ const recruitmentSchema = new Schema<IRecruitment>(
       type: String,
       required: [true, 'Location is required'],
       trim: true,
+      index: true,
     },
     openPositions: {
       type: Number,
@@ -66,6 +79,59 @@ const recruitmentSchema = new Schema<IRecruitment>(
       default: 0,
       min: [0, 'Filled positions cannot be negative'],
     },
+    applicationsCount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Applications count cannot be negative'],
+    },
+    shortlistedCount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Shortlisted count cannot be negative'],
+    },
+    interviewedCount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Interviewed count cannot be negative'],
+    },
+    offersCount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Offers count cannot be negative'],
+    },
+    hiresCount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Hires count cannot be negative'],
+    },
+    timeToHireDays: {
+      type: Number,
+      default: 25,
+      min: [0, 'Time to hire cannot be negative'],
+    },
+    costPerHire: {
+      type: Number,
+      default: 4000,
+      min: [0, 'Cost per hire cannot be negative'],
+    },
+    offerAcceptanceRate: {
+      type: Number,
+      default: 80,
+      min: [0, 'Acceptance rate cannot be negative'],
+      max: [100, 'Acceptance rate cannot exceed 100%'],
+    },
+    sourcingChannel: {
+      type: String,
+      enum: ['LinkedIn', 'Referral', 'Career Portal', 'Campus', 'Agency', 'Direct'],
+      default: 'LinkedIn',
+      index: true,
+    },
+    skillsRequired: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     targetHireDate: {
       type: Date,
     },
@@ -91,6 +157,9 @@ const recruitmentSchema = new Schema<IRecruitment>(
     versionKey: false,
   }
 );
+
+recruitmentSchema.index({ departmentId: 1, status: 1 });
+recruitmentSchema.index({ location: 1, sourcingChannel: 1 });
 
 export const Recruitment: Model<IRecruitment> =
   mongoose.models.Recruitment || mongoose.model<IRecruitment>('Recruitment', recruitmentSchema);
