@@ -581,6 +581,63 @@ export const swaggerDocument = {
         },
       },
     },
+    '/analytics/learning': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Learning & Development Analytics (KPIs, Score Distributions & Course Breakdowns)',
+        description: 'Aggregates learning records, enrolments, completion rates, training hours, assessment scores, certifications earned, effectiveness ratings, and department/course/skill breakdowns.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Filter by Department Name or Code' },
+          { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Filter by Training Category (e.g. Technical, Leadership)' },
+          { name: 'skill', in: 'query', schema: { type: 'string' }, description: 'Filter by Target Skill Name or ObjectId' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['Enrolled', 'In Progress', 'Completed', 'Dropped'] }, description: 'Filter by Learning Status' },
+          { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by Start Enrolment Date' },
+          { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by End Enrolment Date' },
+        ],
+        responses: {
+          '200': { description: 'Learning analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+    '/reports/skill-development': {
+      get: {
+        tags: ['Reports & Exports'],
+        summary: 'Skill Development & Competency Gap Resolution Report',
+        description: 'Returns individual employee skill development records cross-referencing baseline ratings, completed training courses, assessment scores, and verified skill upgrades.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Filter by Department Name or Code' },
+          { name: 'skill', in: 'query', schema: { type: 'string' }, description: 'Filter by Target Skill' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['Enrolled', 'In Progress', 'Completed', 'Dropped'] }, description: 'Filter by Learning Status' },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 }, description: 'Page number' },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 }, description: 'Items per page' },
+        ],
+        responses: {
+          '200': { description: 'Skill development report payload with summary metrics' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+    '/reports/export': {
+      get: {
+        tags: ['Reports & Exports'],
+        summary: 'Multi-Format Workforce Data Exporter (CSV, Excel, PDF)',
+        description: 'Streams formatted workforce data in CSV, Excel (with UTF-8 BOM), or printable PDF formats. Protected by strict RBAC guards.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'type', in: 'query', schema: { type: 'string', enum: ['placement', 'recruitment', 'learning', 'skill-development'], default: 'skill-development' }, description: 'Domain to export' },
+          { name: 'format', in: 'query', schema: { type: 'string', enum: ['csv', 'excel', 'pdf'], default: 'csv' }, description: 'File format' },
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Optional Department Filter' },
+        ],
+        responses: {
+          '200': { description: 'File stream attachment or printable document' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Insufficient export permissions' },
+        },
+      },
+    },
 
     // -------------------------------------------------------------
     // ADMIN ENDPOINTS

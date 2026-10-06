@@ -338,14 +338,12 @@ export const RecruitmentAnalyticsView: React.FC<RecruitmentAnalyticsViewProps> =
                   />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip
-                    formatter={(val: any, name: string) => [
-                      val,
-                      name === 'hires' ? 'Successful Hires' : 'Applications',
-                    ]}
+                    formatter={(val: any, name: string) => [val, name]}
+                    labelFormatter={(label) => `Channel: ${label}`}
                   />
                   <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '10px' }} />
                   <Bar dataKey="applications" name="Applications" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="hires" name="Hires" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="hires" name="Successful Hires" fill="#10B981" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
@@ -405,14 +403,12 @@ export const RecruitmentAnalyticsView: React.FC<RecruitmentAnalyticsViewProps> =
                   />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip
-                    formatter={(val: any, name: string) => [
-                      val,
-                      name === 'openPositions' ? 'Open Positions' : 'Positions Filled',
-                    ]}
+                    formatter={(val: any, name: string) => [val, name]}
+                    labelFormatter={(label) => `Department: ${label}`}
                   />
                   <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '10px' }} />
                   <Bar dataKey="openPositions" name="Open Positions" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="filledPositions" name="Filled" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="filledPositions" name="Positions Filled" fill="#10B981" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>

@@ -10,6 +10,7 @@ import roleRoute from './role.route';
 import locationRoute from './location.route';
 import skillRoute from './skill.route';
 import pipelineRoute from './pipeline.route';
+import reportRoute from './report.route';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/roles', roleRoute);
 router.use('/locations', locationRoute);
 router.use('/skills', skillRoute);
 router.use('/pipeline', pipelineRoute);
+router.use('/reports', reportRoute);
 
 export default router;

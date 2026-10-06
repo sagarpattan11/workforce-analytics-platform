@@ -382,11 +382,13 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
                 <BarChart data={breakdowns.byEmployer} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                   <XAxis dataKey="employer" tick={{ fontSize: 10, fill: theme.palette.text.secondary }} interval={0} angle={-15} textAnchor="end" />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(value: any, name: string) => [value, name === 'placed' ? 'Candidates Placed' : 'Total Applied']} />
+                  <Tooltip
+                    formatter={(value: any, name: string) => [value, name]}
+                    labelFormatter={(label) => `Employer: ${label}`}
+                  />
                   <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '10px' }} />
                   <Bar dataKey="total" name="Total Applied" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="placed" name="Placed" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="placed" name="Candidates Placed" fill="#10B981" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
@@ -423,10 +425,13 @@ export const PlacementAnalyticsView: React.FC<PlacementAnalyticsViewProps> = ({
                   <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                   <XAxis dataKey="skill" tick={{ fontSize: 10, fill: theme.palette.text.secondary }} interval={0} angle={-15} textAnchor="end" />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(value: any, name: string) => [value, name === 'placedCount' ? 'Placed Candidates' : 'Applicants']} />
+                  <Tooltip
+                    formatter={(value: any, name: string) => [value, name]}
+                    labelFormatter={(label) => `Skill: ${label}`}
+                  />
                   <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '10px' }} />
                   <Bar dataKey="candidateCount" name="Applicants" fill="#CBD5E1" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="placedCount" name="Placed" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="placedCount" name="Placed Candidates" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
