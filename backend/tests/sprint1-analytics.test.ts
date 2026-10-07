@@ -31,28 +31,36 @@ describe('Sprint 1 - Workforce & Skill Visibility APIs', () => {
   });
 
   it('GET /api/v1/roles - should retrieve enterprise roles list', async () => {
-    const res = await request(app).get('/api/v1/roles');
+    const res = await request(app)
+      .get('/api/v1/roles')
+      .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it('GET /api/v1/locations - should retrieve workplace locations list', async () => {
-    const res = await request(app).get('/api/v1/locations');
+    const res = await request(app)
+      .get('/api/v1/locations')
+      .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it('GET /api/v1/skills - should retrieve skills registry', async () => {
-    const res = await request(app).get('/api/v1/skills');
+    const res = await request(app)
+      .get('/api/v1/skills')
+      .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it('GET /api/v1/skills/analytics - should return full 7-panel skill analytics data', async () => {
-    const res = await request(app).get('/api/v1/skills/analytics');
+    const res = await request(app)
+      .get('/api/v1/skills/analytics')
+      .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toHaveProperty('skillDistribution');

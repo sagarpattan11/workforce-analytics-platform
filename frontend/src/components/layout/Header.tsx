@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, Link as RouterLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   IconButton,
@@ -15,6 +15,9 @@ import {
   Link,
   useTheme,
   useMediaQuery,
+  Button,
+  Stack,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -25,10 +28,16 @@ import {
   LogOut,
   ChevronRight,
   Shield,
+  CheckCheck,
+  AlertTriangle,
+  Briefcase,
+  GraduationCap,
+  Sparkles,
 } from 'lucide-react';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { APP_ROUTES, UserRole } from '../../config/routes.config';
 import { api } from '../../api/client';
+import { notificationService, AppNotification } from '../../services/notification.service';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -45,6 +54,43 @@ export const Header: React.FC<HeaderProps> = ({
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
   const { resolvedMode, toggleTheme } = useAppTheme();
+
+  const navigate = useNavigate();
+
+  // Notification State & Handlers
+  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const notifMenuOpen = Boolean(notifAnchorEl);
+
+  useEffect(() => {
+    const unsubscribe = notificationService.subscribe((list) => {
+      setNotifications(list);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleOpenNotifMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setNotifAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseNotifMenu = () => {
+    setNotifAnchorEl(null);
+  };
+
+  const handleMarkAllRead = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    notificationService.markAllAsRead();
+  };
+
+  const handleNotificationClick = (notif: AppNotification) => {
+    notificationService.markAsRead(notif.id);
+    handleCloseNotifMenu();
+    if (notif.link) {
+      navigate(notif.link);
+    }
+  };
 
   // User Dropdown State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -155,17 +201,216 @@ export const Header: React.FC<HeaderProps> = ({
         </Tooltip>
 
         {/* Notifications Button */}
-        <Tooltip title="Notifications">
+        <Tooltip title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}>
           <IconButton
             size="small"
             aria-label="Show notifications"
+            aria-controls={notifMenuOpen ? 'notifications-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={notifMenuOpen ? 'true' : undefined}
+            onClick={handleOpenNotifMenu}
             sx={{ color: '#FFFFFF', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' } }}
           >
-            <Badge badgeContent={3} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem' } }}>
+            <Badge
+              badgeContent={unreadCount}
+              invisible={unreadCount === 0}
+              color="error"
+              sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem' } }}
+            >
               <Bell size={18} />
             </Badge>
           </IconButton>
         </Tooltip>
+
+        {/* Notifications Dropdown Menu */}
+        <Menu
+          id="notifications-menu"
+          anchorEl={notifAnchorEl}
+          open={notifMenuOpen}
+          onClose={handleCloseNotifMenu}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            sx: {
+              width: { xs: 320, sm: 380 },
+              maxHeight: 480,
+              mt: 1.5,
+              borderRadius: 2.5,
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            },
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              px: 2,
+              py: 1.5,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="subtitle2" fontWeight={700}>
+                Notifications
+              </Typography>
+              {unreadCount > 0 && (
+                <Chip
+                  label={`${unreadCount} new`}
+                  size="small"
+                  color="primary"
+                  sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700 }}
+                />
+              )}
+            </Stack>
+            {unreadCount > 0 && (
+              <Button
+                size="small"
+                variant="text"
+                startIcon={<CheckCheck size={14} />}
+                onClick={handleMarkAllRead}
+                sx={{ fontSize: '0.75rem', textTransform: 'none', py: 0.25 }}
+              >
+                Mark all read
+              </Button>
+            )}
+          </Box>
+
+          {/* Notification List */}
+          <Box sx={{ maxHeight: 330, overflowY: 'auto' }}>
+            {notifications.length === 0 ? (
+              <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Bell size={32} color="#94A3B8" />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  No notifications
+                </Typography>
+              </Box>
+            ) : (
+              notifications.map((notif) => (
+                <MenuItem
+                  key={notif.id}
+                  onClick={() => handleNotificationClick(notif)}
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: notif.read ? 'transparent' : 'action.hover',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1.5,
+                    whiteSpace: 'normal',
+                    '&:hover': { bgcolor: 'action.selected' },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      bgcolor:
+                        notif.severity === 'warning'
+                          ? 'rgba(239, 68, 68, 0.1)'
+                          : notif.severity === 'success'
+                          ? 'rgba(16, 185, 129, 0.1)'
+                          : notif.severity === 'info'
+                          ? 'rgba(37, 99, 235, 0.1)'
+                          : 'rgba(139, 92, 246, 0.1)',
+                      color:
+                        notif.severity === 'warning'
+                          ? '#EF4444'
+                          : notif.severity === 'success'
+                          ? '#10B981'
+                          : notif.severity === 'info'
+                          ? '#2563EB'
+                          : '#8B5CF6',
+                      mt: 0.5,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {notif.type === 'skill_gap' ? (
+                      <AlertTriangle size={16} />
+                    ) : notif.type === 'placement' ? (
+                      <Briefcase size={16} />
+                    ) : notif.type === 'learning' ? (
+                      <GraduationCap size={16} />
+                    ) : (
+                      <Sparkles size={16} />
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        fontWeight={notif.read ? 600 : 700}
+                        color={notif.read ? 'text.secondary' : 'text.primary'}
+                        noWrap
+                      >
+                        {notif.title}
+                      </Typography>
+                      {!notif.read && (
+                        <Box
+                          sx={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: '50%',
+                            bgcolor: 'primary.main',
+                            ml: 1,
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                    </Stack>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        my: 0.5,
+                      }}
+                    >
+                      {notif.message}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      {notif.timestamp}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))
+            )}
+          </Box>
+
+          {/* Footer */}
+          <Box
+            sx={{
+              p: 1,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.default',
+              textAlign: 'center',
+            }}
+          >
+            <Button
+              fullWidth
+              size="small"
+              variant="text"
+              onClick={() => {
+                handleCloseNotifMenu();
+                navigate('/notifications');
+              }}
+              sx={{ textTransform: 'none', fontSize: '0.8rem', fontWeight: 600 }}
+            >
+              View All in Notification Center →
+            </Button>
+          </Box>
+        </Menu>
 
         <Divider
           orientation="vertical"

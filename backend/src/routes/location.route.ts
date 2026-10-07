@@ -5,12 +5,14 @@ import {
   createLocation,
   updateLocation,
 } from '../controllers/location.controller';
+import { requireAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.get('/', getLocations);
-router.get('/:id', getLocationById);
-router.post('/', createLocation);
-router.put('/:id', updateLocation);
+// All location endpoints are protected by authentication
+router.get('/', requireAuth, getLocations);
+router.get('/:id', requireAuth, getLocationById);
+router.post('/', requireAuth, createLocation);
+router.put('/:id', requireAuth, updateLocation);
 
 export default router;

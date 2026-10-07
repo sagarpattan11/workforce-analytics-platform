@@ -542,6 +542,102 @@ export const swaggerDocument = {
         },
       },
     },
+    '/analytics/placement': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Placement Analytics (5 KPIs, Funnel, Salary Analysis & Breakdowns)',
+        description: 'Aggregates candidate placement data, conversion funnel, salary analysis (min, max, median, average), and breakdowns by department, employer, skill, and location.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Filter by Department Name or Code' },
+          { name: 'location', in: 'query', schema: { type: 'string' }, description: 'Filter by Location (e.g. San Francisco)' },
+          { name: 'employer', in: 'query', schema: { type: 'string' }, description: 'Filter by Employer Name' },
+          { name: 'role', in: 'query', schema: { type: 'string' }, description: 'Filter by Role / Title' },
+          { name: 'skill', in: 'query', schema: { type: 'string' }, description: 'Filter by Skill' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['In Progress', 'Placed', 'Failed'] }, description: 'Filter by Status' },
+        ],
+        responses: {
+          '200': { description: 'Placement analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+    '/analytics/recruitment': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Recruitment Analytics (KPIs, Funnel, Channel Efficiency & Requisitions)',
+        description: 'Aggregates open positions, applications, shortlisted candidates, interviews, offers, hires, time to hire, cost per hire, offer acceptance rate, 5-stage funnel, and sourcing channel efficiency.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'departmentId', in: 'query', schema: { type: 'string' }, description: 'Filter by Department ObjectId' },
+          { name: 'location', in: 'query', schema: { type: 'string' }, description: 'Filter by Location (e.g. San Francisco, London)' },
+          { name: 'priority', in: 'query', schema: { type: 'string', enum: ['Low', 'Medium', 'High', 'Critical'] }, description: 'Filter by Requisition Priority' },
+          { name: 'channel', in: 'query', schema: { type: 'string', enum: ['LinkedIn', 'Referral', 'Career Portal', 'Campus', 'Agency', 'Direct'] }, description: 'Filter by Sourcing Channel' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['Open', 'Interviewing', 'Offer Sent', 'Closed', 'Cancelled'] }, description: 'Filter by Requisition Status' },
+        ],
+        responses: {
+          '200': { description: 'Recruitment analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+    '/analytics/learning': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Learning & Development Analytics (KPIs, Score Distributions & Course Breakdowns)',
+        description: 'Aggregates learning records, enrolments, completion rates, training hours, assessment scores, certifications earned, effectiveness ratings, and department/course/skill breakdowns.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Filter by Department Name or Code' },
+          { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Filter by Training Category (e.g. Technical, Leadership)' },
+          { name: 'skill', in: 'query', schema: { type: 'string' }, description: 'Filter by Target Skill Name or ObjectId' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['Enrolled', 'In Progress', 'Completed', 'Dropped'] }, description: 'Filter by Learning Status' },
+          { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by Start Enrolment Date' },
+          { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by End Enrolment Date' },
+        ],
+        responses: {
+          '200': { description: 'Learning analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+    '/reports/skill-development': {
+      get: {
+        tags: ['Reports & Exports'],
+        summary: 'Skill Development & Competency Gap Resolution Report',
+        description: 'Returns individual employee skill development records cross-referencing baseline ratings, completed training courses, assessment scores, and verified skill upgrades.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Filter by Department Name or Code' },
+          { name: 'skill', in: 'query', schema: { type: 'string' }, description: 'Filter by Target Skill' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['Enrolled', 'In Progress', 'Completed', 'Dropped'] }, description: 'Filter by Learning Status' },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 }, description: 'Page number' },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 }, description: 'Items per page' },
+        ],
+        responses: {
+          '200': { description: 'Skill development report payload with summary metrics' },
+          '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+    '/reports/export': {
+      get: {
+        tags: ['Reports & Exports'],
+        summary: 'Multi-Format Workforce Data Exporter (CSV, Excel, PDF)',
+        description: 'Streams formatted workforce data in CSV, Excel (with UTF-8 BOM), or printable PDF formats. Protected by strict RBAC guards.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'type', in: 'query', schema: { type: 'string', enum: ['placement', 'recruitment', 'learning', 'skill-development'], default: 'skill-development' }, description: 'Domain to export' },
+          { name: 'format', in: 'query', schema: { type: 'string', enum: ['csv', 'excel', 'pdf'], default: 'csv' }, description: 'File format' },
+          { name: 'department', in: 'query', schema: { type: 'string' }, description: 'Optional Department Filter' },
+        ],
+        responses: {
+          '200': { description: 'File stream attachment or printable document' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Insufficient export permissions' },
+        },
+      },
+    },
 
     // -------------------------------------------------------------
     // ADMIN ENDPOINTS
@@ -600,14 +696,17 @@ export const swaggerDocument = {
         tags: ['Roles'],
         summary: 'List Enterprise Roles',
         description: 'Retrieves all defined enterprise job roles with permission structures.',
+        security: [{ bearerAuth: [] }],
         responses: {
           '200': { description: 'Roles list retrieved' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
       post: {
         tags: ['Roles'],
         summary: 'Create Enterprise Role',
         description: 'Registers a new enterprise role.',
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -627,6 +726,7 @@ export const swaggerDocument = {
         },
         responses: {
           '201': { description: 'Role created' },
+          '401': { description: 'Unauthorized' },
         },
       },
     },
@@ -639,14 +739,17 @@ export const swaggerDocument = {
         tags: ['Locations'],
         summary: 'List Workplace Locations',
         description: 'Retrieves all physical office facilities and remote hubs.',
+        security: [{ bearerAuth: [] }],
         responses: {
           '200': { description: 'Locations list retrieved' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
       post: {
         tags: ['Locations'],
         summary: 'Create Location',
         description: 'Registers a new workplace site.',
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -667,6 +770,7 @@ export const swaggerDocument = {
         },
         responses: {
           '201': { description: 'Location created' },
+          '401': { description: 'Unauthorized' },
         },
       },
     },
@@ -679,8 +783,10 @@ export const swaggerDocument = {
         tags: ['Skills'],
         summary: 'List Skills Registry',
         description: 'Retrieves all organizational skills and benchmark demand.',
+        security: [{ bearerAuth: [] }],
         responses: {
           '200': { description: 'Skills retrieved' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
     },
@@ -689,6 +795,7 @@ export const swaggerDocument = {
         tags: ['Skills'],
         summary: 'Skill Analytics Aggregation',
         description: 'Returns data for the 7 Skill Analytics panels: distribution, required vs available, gaps, coverage, top/missing skills, certifications, and training recommendations.',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'departmentId',
@@ -699,6 +806,7 @@ export const swaggerDocument = {
         ],
         responses: {
           '200': { description: 'Skill analytics payload' },
+          '401': { description: 'Unauthorized - Bearer token required' },
         },
       },
     },
