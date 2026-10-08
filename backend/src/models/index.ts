@@ -14,3 +14,6 @@ export * from './training.model';
 export * from './recruitment.model';
 export * from './placement.model';
 export * from './learning-record.model';
+export * from './attrition-model.model';
+export * from './demand-forecast.model';
+export * from './workforce-plan.model';

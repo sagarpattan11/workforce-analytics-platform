@@ -28,6 +28,7 @@ export const swaggerDocument = {
     { name: 'Roles', description: 'Enterprise job roles and permissions hierarchy' },
     { name: 'Locations', description: 'Workplace sites and remote hubs' },
     { name: 'Admin', description: 'Admin role oversight and user management' },
+    { name: 'Predictive & Scenario Planning', description: 'Explainable AI Attrition Risk, SHAP Explainability, Demand Forecasting, 7-Scenario Simulator, and Performance Reporting' },
     { name: 'System', description: 'System health and monitoring endpoints' },
   ],
   components: {
@@ -807,6 +808,153 @@ export const swaggerDocument = {
         responses: {
           '200': { description: 'Skill analytics payload' },
           '401': { description: 'Unauthorized - Bearer token required' },
+        },
+      },
+    },
+
+    // -------------------------------------------------------------
+    // PREDICTIVE & SCENARIO PLANNING ENDPOINTS (SPRINT 3)
+    // -------------------------------------------------------------
+    '/analytics/attrition': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Attrition Risk Overview Analytics',
+        description: 'Aggregates workforce attrition risk scores, risk categories (Low, Medium, High), department comparisons, 6-month historical trend curve, high-risk employee list, and main contributing drivers.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Attrition risk overview payload' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/analytics/attrition/explainability': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'SHAP Model Explainability & Quality Metrics',
+        description: 'Returns global SHAP feature importance rankings, model accuracy metrics (Accuracy, Precision, Recall, F1 Score), confusion matrix, and model drift percentage.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Model explainability metrics payload' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/analytics/attrition/recalculate': {
+      post: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Batch Recalculate Attrition Predictions',
+        description: 'Triggers instant batch recalculation of attrition risk scores across all active employees in MongoDB.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Recalculation complete' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/analytics/attrition/employee/{employeeId}': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Single Employee Attrition Prediction',
+        description: 'Calculates or retrieves explainable attrition risk prediction score, SHAP contributing factors, and personalized HR recommendations for a single employee.',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'employeeId', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          '200': { description: 'Employee attrition prediction payload' },
+          '404': { description: 'Employee not found' },
+        },
+      },
+    },
+    '/analytics/demand-forecasting': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Headcount Demand Forecasting & Shortage Metrics',
+        description: 'Returns 12-month headcount projections by role and department, quarterly hiring timelines (Q1–Q4 in ₹ INR), regional location demand, and shortage severity indicators.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Demand forecasting analytics payload' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/analytics/workforce-planning/simulate': {
+      post: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Run 7-Scenario Strategic Workforce Simulator',
+        description: 'Executes a scenario simulation for any of the 7 business scenarios (Business Growth, High Attrition, Department Expansion, New Projects, Hiring Freeze, Skill Shortages, Budget Reduction) and returns headcount gaps, hiring needs, internal transfer recommendations (> 80% skill match), upskilling needs, and financial budget impact in ₹ INR.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['scenarioName'],
+                properties: {
+                  scenarioName: {
+                    type: 'string',
+                    enum: [
+                      'Business Growth',
+                      'High Attrition',
+                      'Department Expansion',
+                      'New Projects',
+                      'Hiring Freeze',
+                      'Skill Shortages',
+                      'Budget Reduction',
+                    ],
+                    example: 'Business Growth',
+                  },
+                  title: { type: 'string', example: '2026 Q3 Expansion' },
+                  description: { type: 'string', example: 'Simulating 25% growth for tech team' },
+                  parameters: {
+                    type: 'object',
+                    properties: {
+                      growthRatePercent: { type: 'number', example: 25 },
+                      targetDepartment: { type: 'string', example: 'Engineering' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Scenario simulation payload' },
+          '400': { description: 'Validation error' },
+        },
+      },
+    },
+    '/analytics/workforce-planning/scenarios': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'List Saved Workforce Scenarios',
+        description: 'Retrieves saved and simulated scenario plan documents from MongoDB.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Saved workforce scenarios payload' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/analytics/workforce-planning/catalog': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Get 7-Scenario Catalog & Slider Defaults',
+        description: 'Returns metadata, default slider parameters, and descriptions for all 7 supported business scenarios.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Scenario catalog payload' },
+        },
+      },
+    },
+    '/analytics/performance-report': {
+      get: {
+        tags: ['Predictive & Scenario Planning'],
+        summary: 'Performance Reporting & Promotion Readiness',
+        description: 'Returns multi-quarter appraisal trends (2025-Q3, 2025-Q4, 2026-Q1), departmental performance ratings, promotion readiness flags (rating >= 4.2, tenure >= 12 months, goals >= 80%), and performance vs attendance / training correlation matrices.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Performance report payload' },
+          '401': { description: 'Unauthorized' },
         },
       },
     },

@@ -140,8 +140,8 @@ export const getSkillDevelopmentReport = async (
         ? Math.min(5, baselineRating + 0.5)
         : baselineRating;
 
-      const gapIdentified = baselineRating < 4;
-      const gapResolved = isPassed && postTrainingRating >= 4;
+      const gapIdentified = Boolean(baselineRating < 4);
+      const gapResolved = Boolean(isPassed && postTrainingRating >= 4);
 
       return {
         _id: rec._id,
