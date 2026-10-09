@@ -14,6 +14,7 @@ import {
   Settings,
   User,
   ShieldAlert,
+  BrainCircuit,
 } from 'lucide-react';
 
 // Enterprise Roles matching Sprint 1 specification
@@ -158,6 +159,16 @@ export const APP_ROUTES: AppRoute[] = [
     inSidebar: true,
     allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
     description: 'Skill distribution, skill gaps and training recommendations',
+  },
+  {
+    path: '/attrition-risk',
+    label: 'Attrition Prediction',
+    breadcrumbLabel: 'Explainable AI Attrition Risk',
+    icon: BrainCircuit,
+    group: 'Management',
+    inSidebar: true,
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
+    description: 'Explainable AI Attrition Risk Dashboard & SHAP Feature Importance',
   },
   {
     path: '/compliance',

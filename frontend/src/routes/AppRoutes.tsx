@@ -7,6 +7,7 @@ import { RoleGuard } from './RoleGuard';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { EmployeesPage } from '../features/employees/EmployeesPage';
 import { AnalyticsPage } from '../features/analytics/AnalyticsPage';
+import { AttritionRiskPage } from '../features/analytics/AttritionRiskPage';
 import { AttendancePage } from '../features/attendance/AttendancePage';
 import { AbsencePage } from '../features/absence/AbsencePage';
 import { SchedulingPage } from '../features/scheduling/SchedulingPage';
@@ -113,6 +114,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
               <AnalyticsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/attrition-risk"
+          element={
+            <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
+              <AttritionRiskPage />
             </RoleGuard>
           }
         />

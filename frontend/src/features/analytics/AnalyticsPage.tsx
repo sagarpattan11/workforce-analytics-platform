@@ -48,19 +48,7 @@ import {
   Printer,
   ChevronDown,
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 import { PageShell } from '../../components/layout/PageShell';
 import { SkeletonLoader } from '../../components/common/SkeletonLoader';
 import { api } from '../../api/client';
