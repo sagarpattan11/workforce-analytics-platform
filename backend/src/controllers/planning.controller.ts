@@ -9,7 +9,8 @@ import { logAuditEvent } from '../models/audit-log.model';
  */
 export const getDemandForecasting = async (req: Request, res: Response): Promise<void> => {
   try {
-    const data = await DemandService.getDemandForecastingOverview();
+    const forceRecalculate = req.query.refresh === 'true';
+    const data = await DemandService.getDemandForecastingOverview(forceRecalculate);
 
     // Audit Logging
     await logAuditEvent({

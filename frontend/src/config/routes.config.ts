@@ -15,6 +15,7 @@ import {
   User,
   ShieldAlert,
   BrainCircuit,
+  TrendingUp,
 } from 'lucide-react';
 
 // Enterprise Roles matching Sprint 1 specification
@@ -169,6 +170,16 @@ export const APP_ROUTES: AppRoute[] = [
     inSidebar: true,
     allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
     description: 'Explainable AI Attrition Risk Dashboard & SHAP Feature Importance',
+  },
+  {
+    path: '/demand-forecasting',
+    label: 'Demand Forecasting',
+    breadcrumbLabel: 'Workforce Demand Forecasting',
+    icon: TrendingUp,
+    group: 'Management',
+    inSidebar: true,
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
+    description: '12-Month predictive hiring demand, role shortages, and quarterly hiring budgets',
   },
   {
     path: '/compliance',

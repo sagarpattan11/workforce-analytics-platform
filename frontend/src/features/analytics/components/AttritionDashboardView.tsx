@@ -162,7 +162,6 @@ export const AttritionDashboardView: React.FC = () => {
             <Typography variant="h5" fontWeight={700}>
               Explainable AI Attrition Risk Dashboard
             </Typography>
-            <Chip label={explainability?.modelVersion || 'v2.4-xgboost-explainable'} color="primary" size="small" variant="outlined" sx={{ fontWeight: 600 }} />
           </Stack>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Real-time multi-factor attrition risk scoring, SHAP feature attribution, and predictive HR intervention recommendations.
