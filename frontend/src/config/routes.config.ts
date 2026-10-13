@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   BrainCircuit,
   TrendingUp,
+  Sliders,
 } from 'lucide-react';
 
 // Enterprise Roles matching Sprint 1 specification
@@ -180,6 +181,16 @@ export const APP_ROUTES: AppRoute[] = [
     inSidebar: true,
     allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
     description: '12-Month predictive hiring demand, role shortages, and quarterly hiring budgets',
+  },
+  {
+    path: '/workforce-planning',
+    label: 'Workforce Planning',
+    breadcrumbLabel: 'Workforce Planning Scenarios',
+    icon: Sliders,
+    group: 'Management',
+    inSidebar: true,
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
+    description: 'Interactive simulation of 7 business scenarios, headcount gap analysis, and budget forecasts in ₹ INR',
   },
   {
     path: '/compliance',

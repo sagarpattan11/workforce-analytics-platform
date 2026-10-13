@@ -9,6 +9,7 @@ import { EmployeesPage } from '../features/employees/EmployeesPage';
 import { AnalyticsPage } from '../features/analytics/AnalyticsPage';
 import { AttritionRiskPage } from '../features/analytics/AttritionRiskPage';
 import { DemandForecastingPage } from '../features/analytics/DemandForecastingPage';
+import { WorkforcePlanningPage } from '../features/analytics/WorkforcePlanningPage';
 import { AttendancePage } from '../features/attendance/AttendancePage';
 import { AbsencePage } from '../features/absence/AbsencePage';
 import { SchedulingPage } from '../features/scheduling/SchedulingPage';
@@ -131,6 +132,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
               <DemandForecastingPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/workforce-planning"
+          element={
+            <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
+              <WorkforcePlanningPage />
             </RoleGuard>
           }
         />

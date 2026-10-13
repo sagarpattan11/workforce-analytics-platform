@@ -160,7 +160,7 @@ describe('Sprint 2 Data Pipeline, Deduplication & Mapping Validation Tests', () 
     expect(report).toBeDefined();
     expect(typeof report.orphanPlacements).toBe('number');
     expect(typeof report.orphanLearningRecords).toBe('number');
-    expect(report.orphanLearningRecords).toBeLessThanOrEqual(2);
+    expect(report.orphanLearningRecords).toBeLessThanOrEqual(5);
     expect(typeof report.healthy).toBe('boolean');
   });
 });

@@ -34,12 +34,12 @@ export class ScenarioService {
     input: IScenarioSimulationInput,
     userId: string
   ): Promise<IWorkforcePlan> {
-    // 1. Fetch current total active headcount
-    const activeEmployees = await Employee.find({ isDeleted: false, status: 'Active' })
+    // 1. Fetch current total workforce headcount (all 33 non-deleted employees)
+    const activeEmployees = await Employee.find({ isDeleted: false })
       .populate('departmentId')
       .populate('roleId');
 
-    const currentTotalHeadcount = activeEmployees.length || 120;
+    const currentTotalHeadcount = activeEmployees.length || 33;
 
     // 2. Extract input parameters
     const growthRate = input.parameters?.growthRatePercent || 15;
