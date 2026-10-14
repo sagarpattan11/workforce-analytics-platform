@@ -166,4 +166,32 @@ describe('Sprint 3 - Predictive Workforce Planning & Scenario Analytics APIs', (
     },
     25000
   );
+
+  it(
+    '9. GET /api/v1/reports/export - should export Attrition Risk CSV with security headers',
+    async () => {
+      const res = await request(app)
+        .get('/api/v1/reports/export?type=attrition&format=csv')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toContain('text/csv');
+      expect(res.text).toContain('Attrition Risk');
+    },
+    25000
+  );
+
+  it(
+    '10. GET /api/v1/reports/export - should export Performance Excel with UTF-8 BOM',
+    async () => {
+      const res = await request(app)
+        .get('/api/v1/reports/export?type=performance&format=excel')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toContain('application/vnd.ms-excel');
+      expect(res.text).toContain('Performance');
+    },
+    25000
+  );
 });

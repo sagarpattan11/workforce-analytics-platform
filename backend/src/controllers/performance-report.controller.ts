@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Performance } from '../models/performance.model';
 import Employee from '../models/employee.model';
+import Department from '../models/department.model';
 import { Attendance } from '../models/attendance.model';
 import { Training } from '../models/training.model';
 import { logAuditEvent } from '../models/audit-log.model';
@@ -14,10 +15,11 @@ export const getPerformanceReport = async (req: Request, res: Response): Promise
     const { departmentId, reviewPeriod } = req.query;
 
     const matchFilter: Record<string, any> = {};
-    if (departmentId && typeof departmentId === 'string') {
-      matchFilter.departmentId = departmentId;
+    if (departmentId && typeof departmentId === 'string' && departmentId !== 'ALL') {
+      const deptEmps = await Employee.find({ departmentId, isDeleted: false }).select('_id');
+      matchFilter.employeeId = { $in: deptEmps.map((e) => e._id) };
     }
-    if (reviewPeriod && typeof reviewPeriod === 'string') {
+    if (reviewPeriod && typeof reviewPeriod === 'string' && reviewPeriod !== 'ALL') {
       matchFilter.reviewPeriod = reviewPeriod;
     }
 
@@ -30,21 +32,24 @@ export const getPerformanceReport = async (req: Request, res: Response): Promise
       })
       .sort({ reviewPeriod: -1, rating: -1 });
 
-    // Auto-seed sample performance data if collection is empty
-    if (perfRecords.length === 0) {
-      const activeEmps = await Employee.find({ isDeleted: false, status: 'Active' }).limit(10);
+    // Auto-seed sample performance data if the entire collection is empty
+    const totalInCollection = await Performance.countDocuments();
+    if (totalInCollection === 0) {
+      const activeEmps = await Employee.find({ isDeleted: false, status: 'Active' });
       for (const emp of activeEmps) {
-        await Performance.create({
-          employeeId: emp._id,
-          reviewPeriod: '2026-Q1',
-          rating: Number((3.2 + Math.random() * 1.6).toFixed(1)),
-          goals: ['Deliver Q1 Feature Suite', 'Improve Code Coverage'],
-          goalsAchievedRate: Math.floor(75 + Math.random() * 25),
-          strengths: ['Problem Solving', 'Team Collaboration'],
-          areasOfImprovement: ['Technical Documentation'],
-          feedback: 'Solid contributions throughout the quarter.',
-          status: 'Approved',
-        });
+        for (const q of ['2026-Q1', '2025-Q4', '2025-Q3', '2025-Q2']) {
+          await Performance.create({
+            employeeId: emp._id,
+            reviewPeriod: q,
+            rating: Number((3.5 + Math.random() * 1.3).toFixed(1)),
+            goals: ['Execute quarterly KPI deliverables', 'Cross-functional alignment & efficiency'],
+            goalsAchievedRate: Math.floor(78 + Math.random() * 22),
+            strengths: ['Analytical thinking', 'Execution consistency'],
+            areasOfImprovement: ['Strategic documentation'],
+            feedback: 'Solid contributions throughout the quarter.',
+            status: 'Approved',
+          });
+        }
       }
       return getPerformanceReport(req, res);
     }
@@ -121,20 +126,28 @@ export const getPerformanceReport = async (req: Request, res: Response): Promise
 
       // Promotion criteria: rating >= 4.2, tenure >= 18 months, goals >= 85%
       if (r.rating >= 4.2 && tenureMonths >= 12 && (r.goalsAchievedRate || 0) >= 80) {
-        promotionReadyList.push({
-          id: r._id.toString(),
-          employeeId: emp.employeeId || 'EMP-000',
-          name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'Employee',
-          department: emp.departmentId?.name || 'General',
-          position: emp.position || 'Specialist',
-          rating: r.rating,
-          goalsAchievedRate: r.goalsAchievedRate,
-          tenureMonths,
-          promotionReadinessScore: Number(
-            Math.min(98, 80 + (r.rating - 4.0) * 10 + (tenureMonths / 12) * 2).toFixed(1)
-          ),
-          recommendedRole: `Senior ${emp.position || 'Specialist'}`,
-        });
+          const curPosition = emp.position || 'Specialist';
+          let recommendedRole = `Senior ${curPosition}`;
+          if (curPosition.startsWith('Senior ')) {
+            recommendedRole = curPosition.replace('Senior ', 'Lead ');
+          } else if (curPosition.startsWith('Lead ')) {
+            recommendedRole = curPosition.replace('Lead ', 'Principal ');
+          }
+
+          promotionReadyList.push({
+            id: r._id.toString(),
+            employeeId: emp.employeeId || 'EMP-000',
+            name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'Employee',
+            department: emp.departmentId?.name || 'General',
+            position: curPosition,
+            rating: r.rating,
+            goalsAchievedRate: r.goalsAchievedRate,
+            tenureMonths,
+            promotionReadinessScore: Number(
+              Math.min(98, 80 + (r.rating - 4.0) * 10 + (tenureMonths / 12) * 2).toFixed(1)
+            ),
+            recommendedRole,
+          });
       }
     }
 
@@ -167,6 +180,8 @@ export const getPerformanceReport = async (req: Request, res: Response): Promise
       details: 'Viewed Performance Analytics & Promotion Readiness Report',
     });
 
+    const allDepartments = await Department.find({ isActive: { $ne: false } }).select('_id name code');
+
     res.status(200).json({
       success: true,
       message: 'Performance analytics report retrieved successfully',
@@ -179,6 +194,11 @@ export const getPerformanceReport = async (req: Request, res: Response): Promise
           promotionReadyCount: promotionReadyList.length,
         },
         departmentRatings,
+        allDepartments: allDepartments.map((d) => ({
+          departmentId: d._id.toString(),
+          departmentName: d.name,
+          code: d.code,
+        })),
         performanceTrends,
         promotionReadiness: promotionReadyList.sort(
           (a, b) => b.promotionReadinessScore - a.promotionReadinessScore

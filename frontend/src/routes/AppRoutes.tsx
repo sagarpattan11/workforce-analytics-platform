@@ -10,6 +10,7 @@ import { AnalyticsPage } from '../features/analytics/AnalyticsPage';
 import { AttritionRiskPage } from '../features/analytics/AttritionRiskPage';
 import { DemandForecastingPage } from '../features/analytics/DemandForecastingPage';
 import { WorkforcePlanningPage } from '../features/analytics/WorkforcePlanningPage';
+import { PerformanceReportPage } from '../features/analytics/PerformanceReportPage';
 import { AttendancePage } from '../features/attendance/AttendancePage';
 import { AbsencePage } from '../features/absence/AbsencePage';
 import { SchedulingPage } from '../features/scheduling/SchedulingPage';
@@ -144,6 +145,14 @@ export const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/performance-report"
+          element={
+            <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
+              <PerformanceReportPage />
+            </RoleGuard>
+          }
+        />
+        <Route
           path="/compliance"
           element={
             <RoleGuard allowedRoles={['Admin', 'HR']} currentRole={currentRole}>
@@ -162,11 +171,12 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="/reports"
           element={
-            <RoleGuard allowedRoles={['Admin', 'HR', 'Manager']} currentRole={currentRole}>
+            <RoleGuard allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Team Lead']} currentRole={currentRole}>
               <ReportsPage />
             </RoleGuard>
           }
         />
+        <Route path="/executive-reports" element={<Navigate to="/reports" replace />} />
 
         {/* System Group */}
         <Route path="/notifications" element={<NotificationsPage />} />

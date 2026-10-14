@@ -17,6 +17,7 @@ import {
   BrainCircuit,
   TrendingUp,
   Sliders,
+  Award,
 } from 'lucide-react';
 
 // Enterprise Roles matching Sprint 1 specification
@@ -193,6 +194,26 @@ export const APP_ROUTES: AppRoute[] = [
     description: 'Interactive simulation of 7 business scenarios, headcount gap analysis, and budget forecasts in ₹ INR',
   },
   {
+    path: '/performance-report',
+    label: 'Performance Analytics',
+    breadcrumbLabel: 'Performance & Promotion Readiness',
+    icon: Award,
+    group: 'Management',
+    inSidebar: true,
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager', 'Team Lead'],
+    description: 'Multi-dimensional performance tracking, behavioral correlations (Attendance & L&D), and algorithmic promotion qualification pipelines',
+  },
+  {
+    path: '/reports',
+    label: 'Executive Reports',
+    breadcrumbLabel: 'Executive Reports',
+    icon: FileText,
+    group: 'Management',
+    inSidebar: true,
+    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'Team Lead', 'HR', 'Manager', 'Employee'],
+    description: 'Multi-format executive reporting portal, export center and compliance summaries',
+  },
+  {
     path: '/compliance',
     label: 'Compliance',
     breadcrumbLabel: 'Compliance & Audits',
@@ -211,16 +232,6 @@ export const APP_ROUTES: AppRoute[] = [
     inSidebar: true,
     allowedRoles: ['Admin', 'HR Manager', 'Employee', 'HR'],
     description: 'Compensation structures, payslips and payroll cycles',
-  },
-  {
-    path: '/reports',
-    label: 'Reports',
-    breadcrumbLabel: 'Executive Reports',
-    icon: FileText,
-    group: 'Management',
-    inSidebar: true,
-    allowedRoles: ['Admin', 'HR Manager', 'Executive', 'Department Manager', 'HR', 'Manager'],
-    description: 'Report builder, export tools and executive analytics',
   },
 
   // System Group

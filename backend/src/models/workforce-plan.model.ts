@@ -207,4 +207,8 @@ const WorkforcePlanSchema: Schema = new Schema(
   }
 );
 
-export default mongoose.model<IWorkforcePlan>('WorkforcePlan', WorkforcePlanSchema);
+export const WorkforcePlan =
+  mongoose.models.WorkforcePlan ||
+  mongoose.model<IWorkforcePlan>('WorkforcePlan', WorkforcePlanSchema);
+
+export default WorkforcePlan;

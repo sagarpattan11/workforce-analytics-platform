@@ -81,8 +81,18 @@ export interface SkillDevelopmentQueryFilters {
   q?: string;
 }
 
+export type ReportType =
+  | 'attrition'
+  | 'demand'
+  | 'workforce-planning'
+  | 'performance'
+  | 'skill-development'
+  | 'recruitment'
+  | 'placement'
+  | 'learning';
+
 export interface ExportReportParams {
-  type: 'placement' | 'recruitment' | 'learning' | 'skill-development';
+  type: ReportType;
   format: 'csv' | 'excel' | 'pdf';
   department?: string;
   departmentId?: string;
